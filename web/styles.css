@@ -602,11 +602,15 @@ tbody tr:active { background: rgba(255,255,255,0.03); }
   inset: 0;
   background: rgba(0,0,0,0.7);
   z-index: 300;
-  display: flex;
+  display: none;
   align-items: flex-end;
   justify-content: center;
   backdrop-filter: blur(4px);
   animation: fadeInOverlay 0.2s ease;
+}
+
+.modal-overlay.active {
+  display: flex !important;
 }
 
 @keyframes fadeInOverlay {
