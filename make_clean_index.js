@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const indexHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -443,4 +445,7 @@
     }
   </script>
 </body>
-</html>
+</html>`;
+
+fs.writeFileSync('web/index.html', indexHtml, 'utf8');
+console.log('web/index.html generated perfectly.');

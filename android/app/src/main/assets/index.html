@@ -20,7 +20,7 @@
 
   <title>🛵 Entregador</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Chart.js (with CDN fallback approach) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
   <!-- Register Service Worker -->
@@ -37,10 +37,10 @@
 <body>
   <div id="app">
 
-    <!-- ══ HEADER ══ -->
+    <!-- HEADER -->
     <header class="header">
       <div class="header-logo">
-        <span class="logo-icon">🚚</span>
+        <span class="logo-icon">🛵</span>
         <h1 style="font-size:1.1rem">Entregador</h1>
       </div>
       <div class="header-actions">
@@ -53,43 +53,37 @@
       </div>
     </header>
 
-    <!-- 🟢🔴 PAGE: HOME 🟢🔴 -->
+    <!-- PAGE: HOME -->
     <main id="page-home" class="page active">
 
       <!-- Home Header -->
-      <div class="flex items-center justify-between" style="margin-bottom:16px;">
+      <div class="flex items-center justify-between" style="margin-bottom:12px;">
         <div>
-          <h4>Hoje</h4>
+          <h4>HOJE</h4>
           <span id="home-date" class="text-sm text-muted"></span>
         </div>
-        <button class="btn btn-primary" onclick="openDayModal(null)" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Registrar</button>
+        <button class="btn btn-primary" onclick="openDayModal(null)" style="padding:8px 16px; background:#ff6b00; color:#fff; font-weight:700;">+ Registrar</button>
       </div>
-
-      
-        <button class="btn btn-primary" onclick="openTripModal()" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Nova Corrida</button>
-      </div>
-
-      
 
       <!-- Hero cards -->
       <div class="hero-grid">
         <div class="hero-card c-green">
-          <span class="hero-card-label">💰 Receita</span>
+          <span class="hero-card-label">💰 RECEITA</span>
           <span id="h-receita" class="hero-card-value text-green">R$ 0,00</span>
           <span class="hero-card-sub">receita bruta</span>
         </div>
         <div class="hero-card c-blue">
-          <span class="hero-card-label">📍 Quilômetros</span>
+          <span class="hero-card-label">📍 QUILÔMETROS</span>
           <span id="h-km" class="hero-card-value text-blue">0 km</span>
           <span class="hero-card-sub">rodados hoje</span>
         </div>
         <div class="hero-card c-yellow">
-          <span class="hero-card-label">📈 R$/km</span>
+          <span class="hero-card-label">📈 R$/KM</span>
           <span id="h-rpm" class="hero-card-value">—</span>
           <span id="h-rpm-sub" class="hero-card-sub">eficiência</span>
         </div>
         <div class="hero-card c-purple">
-          <span class="hero-card-label">💸 Lucro líquido</span>
+          <span class="hero-card-label">💸 LUCRO LÍQUIDO</span>
           <span id="h-lucro" class="hero-card-value">R$ 0,00</span>
           <span id="h-lucro-sub" class="hero-card-sub">após combustível</span>
         </div>
@@ -146,7 +140,7 @@
 
     </main>
 
-    <!-- ══ PAGE: SEMANA ══ -->
+    <!-- PAGE: SEMANA -->
     <main id="page-week" class="page">
 
       <div class="section-title">
@@ -184,7 +178,7 @@
           <span id="w-fuel" class="stat-row-value text-red">—</span>
         </div>
         <div class="stat-row">
-          <span class="stat-row-label">📆 Dias ativos</span>
+          <span class="stat-row-label">📅 Dias ativos</span>
           <span id="w-days" class="stat-row-value">—</span>
         </div>
       </div>
@@ -217,7 +211,7 @@
 
     </main>
 
-    <!-- ══ PAGE: COMBUSTÍVEL ══ -->
+    <!-- PAGE: COMBUSTÍVEL -->
     <main id="page-fuel" class="page">
 
       <div class="section-title">
@@ -227,112 +221,55 @@
       <!-- KPIs -->
       <div class="hero-grid">
         <div class="hero-card c-yellow">
-          <span class="hero-card-label">⚡ Consumo médio</span>
-          <span id="f-kml" class="hero-card-value text-yellow">—</span>
-          <span id="f-est-tag" class="hero-card-sub"></span>
+          <span class="hero-card-label">⚡ Média km/L</span>
+          <span id="f-avg-kml" class="hero-card-value">27,5</span>
+          <span id="f-avg-sub" class="hero-card-sub">estimativa</span>
         </div>
-        <div class="hero-card c-red">
-          <span class="hero-card-label">💸 Custo/km</span>
-          <span id="f-cpkm" class="hero-card-value text-red">—</span>
-          <span class="hero-card-sub">gasto em combustível</span>
-        </div>
-      </div>
-
-      <div class="card card-sm">
-        <div class="stat-row">
-          <span class="stat-row-label">⛽ Preço gasolina</span>
-          <span id="f-price" class="stat-row-value text-yellow">—</span>
+        <div class="hero-card c-purple">
+          <span class="hero-card-label">💸 Custo por km</span>
+          <span id="f-cost-km" class="hero-card-value">R$ 0,29</span>
+          <span class="hero-card-sub">baseado no abastecimento</span>
         </div>
       </div>
 
-      <!-- Alert -->
-      <div id="f-alert"></div>
+      <!-- Fuel Logs list -->
+      <div class="section-title">
+        <h2>📋 Histórico de abastecimentos</h2>
+        <button class="btn btn-secondary btn-sm" onclick="openFuelModal(null)">+ Abastecimento</button>
+      </div>
+      <div id="fuel-logs-list"></div>
+
+    </main>
+
+    <!-- PAGE: APPS -->
+    <main id="page-apps" class="page">
+
+      <div class="section-title">
+        <h2>📱 Desempenho por App</h2>
+      </div>
 
       <!-- Chart -->
       <div class="card">
         <div class="card-header">
-          <h3>📊 Histórico km/L</h3>
+          <h3>📊 Participação na receita</h3>
         </div>
-        <div class="chart-wrap chart-wrap-sm">
-          <canvas id="chart-fuel"></canvas>
-        </div>
-      </div>
-
-      <!-- Logs -->
-      <div class="section-title">
-        <h2>🧾 Abastecimentos</h2>
-      </div>
-      <div id="f-logs-list"></div>
-
-    </main>
-
-    <!-- ══ PAGE: APPS ══ -->
-    <main id="page-apps" class="page">
-
-      <div class="section-title">
-        <h2>📱 Apps</h2>
-      </div>
-
-      <!-- Best app -->
-      <div id="apps-best"></div>
-
-      <!-- Doughnut -->
-      <div class="card">
-        <div class="card-header">
-          <h3>🥧 Participação na receita</h3>
-          <span class="text-xs text-muted">semana atual</span>
-        </div>
-        <div class="chart-wrap-pie">
+        <div class="chart-wrap">
           <canvas id="chart-apps"></canvas>
         </div>
       </div>
 
-      <!-- Table semana -->
+      <!-- Ranking por App -->
       <div class="card">
-        <h3 style="margin-bottom:12px">📅 Esta semana</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>App</th>
-                <th>Receita</th>
-                <th>R$/km</th>
-                <th>%</th>
-              </tr>
-            </thead>
-            <tbody id="apps-week-table">
-              <tr><td colspan="4" class="text-muted text-sm text-center" style="padding:16px">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Table geral -->
-      <div class="card">
-        <h3 style="margin-bottom:12px">🗂️ Histórico geral</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>App</th>
-                <th>Receita</th>
-                <th>R$/km</th>
-                <th>%</th>
-              </tr>
-            </thead>
-            <tbody id="apps-all-table">
-              <tr><td colspan="4" class="text-muted text-sm text-center" style="padding:16px">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <h3 style="margin-bottom:12px">🏆 Detalhamento</h3>
+        <div id="apps-ranking"></div>
       </div>
 
     </main>
 
-    <!-- ══ PAGE: MANUTENÇÃO ══ -->
+    <!-- PAGE: MANUTENÇÃO -->
     <main id="page-manut" class="page">
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between" style="margin-bottom:12px;">
         <h2>🔧 Manutenção</h2>
         <button class="btn btn-secondary btn-sm" onclick="openManutModal()">Editar</button>
       </div>
@@ -341,7 +278,7 @@
       <div class="card">
         <div class="flex items-center justify-between">
           <div>
-            <h4>🏍️ <span id="m-bike">CG 105cc</span></h4>
+            <h4>🏍️ <span id="m-bike">CG 160</span></h4>
             <div class="text-3xl mt-4" id="m-odo">0 km</div>
             <div class="text-sm text-muted mt-4">odômetro total registrado</div>
           </div>
@@ -394,7 +331,7 @@
 
     </main>
 
-    <!-- ══ BOTTOM NAV ══ -->
+    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
       <button class="nav-item active" data-page="home">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -428,15 +365,15 @@
       </button>
     </nav>
 
-    <!-- ══ FAB ══ -->
-    <button id="fab" class="fab" title="Adicionar">＋</button>
+    <!-- FAB -->
+    <button id="fab" class="fab" title="Adicionar">➕</button>
 
-    <!-- ══ TOAST ══ -->
+    <!-- TOAST -->
     <div id="toast"></div>
 
   </div><!-- /#app -->
 
-  <!-- 🟢🔴 TRIP MODAL 🟢🔴 -->
+  <!-- TRIP MODAL -->
   <div id="modal-trip" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
@@ -489,7 +426,7 @@
   <script src="charts.js"></script>
   <script src="app.js"></script>
 
-  <!-- Maintenance quick actions (inline, needs access to DB) -->
+  <!-- Maintenance quick actions -->
   <script>
     function markOilChanged() {
       const m = DB.getMaintenance();

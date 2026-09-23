@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const indexHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -37,7 +39,7 @@
 <body>
   <div id="app">
 
-    <!-- HEADER -->
+    <!-- ══ HEADER ══ -->
     <header class="header">
       <div class="header-logo">
         <span class="logo-icon">🛵</span>
@@ -53,13 +55,13 @@
       </div>
     </header>
 
-    <!-- PAGE: HOME -->
+    <!-- 🟢🔴 PAGE: HOME 🟢🔴 -->
     <main id="page-home" class="page active">
 
       <!-- Home Header -->
       <div class="flex items-center justify-between" style="margin-bottom:12px;">
         <div>
-          <h4>HOJE</h4>
+          <h4>Hoje</h4>
           <span id="home-date" class="text-sm text-muted"></span>
         </div>
         <button class="btn btn-primary" onclick="openDayModal(null)" style="padding:8px 16px; background:#ff6b00; color:#fff; font-weight:700;">+ Registrar</button>
@@ -140,7 +142,7 @@
 
     </main>
 
-    <!-- PAGE: SEMANA -->
+    <!-- ══ PAGE: SEMANA ══ -->
     <main id="page-week" class="page">
 
       <div class="section-title">
@@ -211,7 +213,7 @@
 
     </main>
 
-    <!-- PAGE: COMBUSTÍVEL -->
+    <!-- ══ PAGE: COMBUSTÍVEL ══ -->
     <main id="page-fuel" class="page">
 
       <div class="section-title">
@@ -241,7 +243,7 @@
 
     </main>
 
-    <!-- PAGE: APPS -->
+    <!-- ══ PAGE: APPS ══ -->
     <main id="page-apps" class="page">
 
       <div class="section-title">
@@ -266,7 +268,7 @@
 
     </main>
 
-    <!-- PAGE: MANUTENÇÃO -->
+    <!-- ══ PAGE: MANUTENÇÃO ══ -->
     <main id="page-manut" class="page">
 
       <div class="flex items-center justify-between" style="margin-bottom:12px;">
@@ -331,7 +333,7 @@
 
     </main>
 
-    <!-- BOTTOM NAV -->
+    <!-- ══ BOTTOM NAV ══ -->
     <nav class="bottom-nav">
       <button class="nav-item active" data-page="home">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -365,15 +367,15 @@
       </button>
     </nav>
 
-    <!-- FAB -->
+    <!-- ══ FAB ══ -->
     <button id="fab" class="fab" title="Adicionar">➕</button>
 
-    <!-- TOAST -->
+    <!-- ══ TOAST ══ -->
     <div id="toast"></div>
 
   </div><!-- /#app -->
 
-  <!-- TRIP MODAL -->
+  <!-- 🟢🔴 TRIP MODAL 🟢🔴 -->
   <div id="modal-trip" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
@@ -443,4 +445,7 @@
     }
   </script>
 </body>
-</html>
+</html>\`;
+
+fs.writeFileSync('web/index.html', indexHtml, 'utf8');
+console.log('web/index.html generated flawlessly.');
