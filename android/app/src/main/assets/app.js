@@ -62,7 +62,7 @@ function setupFAB() {
   const fab = document.getElementById('fab');
   if (!fab) return;
   fab.addEventListener('click', () => {
-    if (STATE.page === 'home') openDayModal(null);
+    if (STATE.page === 'home') openTripModal(null);
     else if (STATE.page === 'fuel') openFuelModal(null);
   });
 }
@@ -367,7 +367,7 @@ function openDayModal(id) {
   const today = new Date().toISOString().slice(0, 10);
 
   const html = `
-    <div class="modal-overlay" id="modal-day" onclick="closeModal('modal-day', event)">
+    <div class="modal-overlay active" id="modal-day" onclick="closeModal('modal-day', event)">
       <div class="modal">
         <div class="modal-handle"></div>
         <div class="modal-title">${isEdit ? '✅ï¸ Editar Dia' : '➕ Registrar Dia'}</div>
@@ -481,7 +481,7 @@ function openFuelModal() {
   const s = DB.getSettings();
 
   const html = `
-    <div class="modal-overlay" id="modal-fuel" onclick="closeModal('modal-fuel', event)">
+    <div class="modal-overlay active" id="modal-fuel" onclick="closeModal('modal-fuel', event)">
       <div class="modal">
         <div class="modal-handle"></div>
         <div class="modal-title">â›½ Registrar Abastecimento</div>
@@ -565,7 +565,7 @@ function openManutModal() {
   const s = DB.getSettings();
 
   const html = `
-    <div class="modal-overlay" id="modal-manut" onclick="closeModal('modal-manut', event)">
+    <div class="modal-overlay active" id="modal-manut" onclick="closeModal('modal-manut', event)">
       <div class="modal">
         <div class="modal-handle"></div>
         <div class="modal-title">ðŸ”§ Editar Manutenção</div>
@@ -626,7 +626,7 @@ function saveManut() {
 function openSettingsModal() {
   const s = DB.getSettings();
   const html = `
-    <div class="modal-overlay" id="modal-settings" onclick="closeModal('modal-settings', event)">
+    <div class="modal-overlay active" id="modal-settings" onclick="closeModal('modal-settings', event)">
       <div class="modal">
         <div class="modal-handle"></div>
         <div class="modal-title">âš™ï¸ Configurações</div>

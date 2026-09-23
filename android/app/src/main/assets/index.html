@@ -57,11 +57,16 @@
     <main id="page-home" class="page active">
 
       <!-- Home Header -->
-      <div class="flex items-center justify-between" style="margin-bottom:12px;">
+      <div class="flex items-center justify-between" style="margin-bottom:12px; gap:8px; flex-wrap:wrap;">
         <div>
-          <h4>HOJE</h4>
+          <h4 style="margin:0;">HOJE</h4>
           <span id="home-date" class="text-sm text-muted"></span>
         </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="openDayModal(null)">+ Registrar Dia</button>
+          <button class="btn btn-primary btn-sm" onclick="openTripModal(null)" style="background:#ff6b00; color:#fff; font-weight:700;">+ Nova Corrida</button>
+        </div>
+      </div>
         <button class="btn btn-primary" onclick="openDayModal(null)" style="padding:8px 16px; background:#ff6b00; color:#fff; font-weight:700;">+ Registrar</button>
       </div>
 
