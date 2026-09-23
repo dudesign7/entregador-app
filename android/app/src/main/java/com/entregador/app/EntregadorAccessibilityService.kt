@@ -7,51 +7,65 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
- * EntregadorAccessibilityService escuta a tela dos aplicativos de entrega (iFood, Uber, 99, Lalamove),
- * detectando automaticamente quando o entregador entra ou sai de uma corrida.
+ * Serviço de Acessibilidade Otimizado para Produção
+ * Previne vazamentos de memória (Memory Leaks) através da reciclagem estrita de nós.
  */
 class EntregadorAccessibilityService : AccessibilityService() {
 
-    private var currentTripState: String = "IDLE" // "IDLE", "IN_TRIP"
+    private var currentTripState: String = "IDLE"
     private var currentAppName: String = "Desconhecido"
-    private var currentKmInTrip: Double = 0.0
+    private var lastEventTimestamp: Long = 0
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
 
+        // Debounce para evitar sobrecarga em scrolls rápidos (mínimo 300ms entre varreduras)
+        val now = System.currentTimeMillis()
+        if (now - lastEventTimestamp < 300) return
+        lastEventTimestamp = now
+
         val packageName = event.packageName?.toString() ?: return
-        val rootNode = rootInActiveWindow ?: return
+        val supportedApps = listOf(
+            "br.com.ifood.driver", 
+            "com.ubercab.driver", 
+            "com.taxis99.driver", 
+            "com.lalamove.driver.p2p"
+        )
 
-        val supportedApps = listOf("br.com.ifood.driver", "com.ubercab.driver", "com.taxis99.driver", "com.lalamove.driver.p2p")
-        if (supportedApps.contains(packageName)) {
-            val prefs = getSharedPreferences("entregador_prefs", android.content.Context.MODE_PRIVATE)
-            val isAvailable = prefs.getBoolean("is_available", false)
-            if (!isAvailable) {
-                // Auto change to available
-                prefs.edit().putBoolean("is_available", true).apply()
-                val statusIntent = Intent("com.entregador.STATUS_CHANGED")
-                statusIntent.putExtra("is_available", true)
-                sendBroadcast(statusIntent)
+        if (!supportedApps.contains(packageName)) return
+
+        val prefs = getSharedPreferences("entregador_prefs", MODE_PRIVATE)
+        
+        // Auto-ativar disponibilidade ao abrir apps de entrega
+        val isAvailable = prefs.getBoolean("is_available", false)
+        if (!isAvailable) {
+            prefs.edit().putBoolean("is_available", true).apply()
+            val statusIntent = Intent("com.entregador.STATUS_CHANGED").apply {
+                putExtra("is_available", true)
             }
+            sendBroadcast(statusIntent)
         }
 
-        val prefs = getSharedPreferences("entregador_prefs", android.content.Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("is_available", false)) {
-            // Se estiver indisponível (e não foi ativado pela checagem acima), ignorar.
-            return
-        }
-
-        when (packageName) {
-            "br.com.ifood.driver"     -> analisarTela(rootNode, "iFood")
-            "com.ubercab.driver"      -> analisarTela(rootNode, "Uber")
-            "com.taxis99.driver"      -> analisarTela(rootNode, "99 Food")
-            "com.lalamove.driver.p2p" -> analisarTela(rootNode, "Lalamove")
+        val rootNode = rootInActiveWindow ?: return
+        try {
+            when (packageName) {
+                "br.com.ifood.driver"     -> analisarTelaSafely(rootNode, "iFood")
+                "com.ubercab.driver"      -> analisarTelaSafely(rootNode, "Uber")
+                "com.taxis99.driver"      -> analisarTelaSafely(rootNode, "99 Food")
+                "com.lalamove.driver.p2p" -> analisarTelaSafely(rootNode, "Lalamove")
+            }
+        } finally {
+            try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    rootNode.recycle()
+                }
+            } catch (_: Exception) {}
         }
     }
 
-    private fun analisarTela(rootNode: AccessibilityNodeInfo, appName: String) {
+    private fun analisarTelaSafely(rootNode: AccessibilityNodeInfo, appName: String) {
         val textos = mutableListOf<String>()
-        extrairTextos(rootNode, textos)
+        extrairTextosRecursoSeguro(rootNode, textos, maxDepth = 10)
 
         val emCorridaKeywords = listOf(
             "corrida em andamento", "a caminho do cliente", "coleta em andamento",
@@ -82,29 +96,38 @@ class EntregadorAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun extrairTextos(node: AccessibilityNodeInfo?, lista: MutableList<String>) {
-        if (node == null) return
-        if (!node.text.isNullOrBlank()) {
-            lista.add(node.text.toString())
+    private fun extrairTextosRecursoSeguro(
+        node: AccessibilityNodeInfo?, 
+        lista: MutableList<String>, 
+        maxDepth: Int
+    ) {
+        if (node == null || maxDepth <= 0) return
+
+        node.text?.let {
+            if (it.isNotBlank()) lista.add(it.toString())
         }
+
         for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
             try {
-                extrairTextos(node.getChild(i), lista)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                extrairTextosRecursoSeguro(child, lista, maxDepth - 1)
+            } finally {
+                try {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                        child.recycle()
+                    }
+                } catch (_: Exception) {}
             }
         }
     }
 
     private fun extrairValorGanho(textos: List<String>): Double {
+        val regex = Regex("""R\$\s*([0-9]+[.,][0-9]{2})""", RegexOption.IGNORE_CASE)
         for (t in textos) {
-            if (t.contains("R$", ignoreCase = true)) {
-                val regex = Regex("R\\$\\s*([0-9]+[.,][0-9]{2})")
-                val match = regex.find(t)
-                if (match != null) {
-                    val strVal = match.groupValues[1].replace(".", "").replace(",", ".")
-                    return strVal.toDoubleOrNull() ?: 0.0
-                }
+            val match = regex.find(t)
+            if (match != null) {
+                val cleanVal = match.groupValues[1].replace(".", "").replace(",", ".")
+                return cleanVal.toDoubleOrNull() ?: 0.0
             }
         }
         return 0.0
@@ -112,7 +135,6 @@ class EntregadorAccessibilityService : AccessibilityService() {
 
     private fun iniciarCorridaAuto(appName: String) {
         try {
-            // 1. Inicia o rastreador de GPS como serviço em primeiro plano
             val gpsIntent = Intent(this, GpsTrackerService::class.java).apply {
                 action = GpsTrackerService.ACTION_START_TRACKING
             }
@@ -122,7 +144,6 @@ class EntregadorAccessibilityService : AccessibilityService() {
                 startService(gpsIntent)
             }
 
-            // 2. Atualiza o Widget Flutuante
             val widgetIntent = Intent(this, FloatingWidgetService::class.java).apply {
                 putExtra("app_name", appName)
                 putExtra("status", "CORRIDA EM ANDAMENTO")
@@ -136,17 +157,14 @@ class EntregadorAccessibilityService : AccessibilityService() {
 
     private fun finalizarCorridaAuto(appName: String, valorGanho: Double) {
         try {
-            // 1. Para o GPS
             val gpsIntent = Intent(this, GpsTrackerService::class.java).apply {
                 action = GpsTrackerService.ACTION_STOP_TRACKING
             }
             startService(gpsIntent)
 
-            // 2. Salva os dados acumulados no repositório
             val repo = DataRepository.getInstance(this)
-            repo.registrarCorridaFinalizada(appName, valorGanho, currentKmInTrip)
+            repo.registrarCorridaFinalizada(appName, valorGanho, 0.0)
 
-            // 3. Atualiza o Widget Flutuante
             val widgetIntent = Intent(this, FloatingWidgetService::class.java).apply {
                 putExtra("app_name", appName)
                 putExtra("status", "CORRIDA FINALIZADA")

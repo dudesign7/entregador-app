@@ -855,3 +855,137 @@ window.onclick = function(event) {
     }
 }
 
+
+// ============================================================
+// BROWSER GPS TRACKER (substitui o GpsTrackerService nativo)
+// Funciona no iOS, Android browser e desktop
+// ============================================================
+const BrowserGPS = {
+  watchId: null,
+  lastPos: null,
+  totalKm: 0,
+  isTracking: false,
+  isPaused: false,
+
+  start() {
+    if (!navigator.geolocation) {
+      toast('GPS não suportado neste dispositivo.');
+      return;
+    }
+    this.isTracking = true;
+    this.isPaused = false;
+    this.totalKm = 0;
+    this.lastPos = null;
+
+    this.watchId = navigator.geolocation.watchPosition(
+      pos => this._onLocation(pos),
+      err => console.warn('GPS error:', err),
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    );
+    console.log('GPS tracking started');
+  },
+
+  pause() {
+    this.isPaused = true;
+  },
+
+  resume() {
+    this.isPaused = false;
+  },
+
+  stop() {
+    if (this.watchId !== null) {
+      navigator.geolocation.clearWatch(this.watchId);
+      this.watchId = null;
+    }
+    this.isTracking = false;
+    const km = this.totalKm;
+    this.totalKm = 0;
+    this.lastPos = null;
+    return km; // return accumulated km for the trip
+  },
+
+  _onLocation(pos) {
+    if (this.isPaused || !this.isTracking) return;
+
+    const { latitude, longitude, speed, accuracy } = pos.coords;
+    // Anti-ghosting: speed > 0.5 m/s (~1.8 km/h) and accuracy < 30m
+    if (accuracy > 30) return;
+
+    if (this.lastPos && (speed == null || speed > 0.5)) {
+      const dist = this._haversine(
+        this.lastPos.lat, this.lastPos.lng,
+        latitude, longitude
+      );
+      // Sanity check: max ~200 km/h
+      if (dist < 0.5) {
+        this.totalKm += dist;
+        // Update widget if visible
+        const el = document.getElementById('browser-gps-km');
+        if (el) el.textContent = fmtKm(this.totalKm);
+      }
+    }
+    this.lastPos = { lat: latitude, lng: longitude };
+  },
+
+  _haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+};
+
+// ============================================================
+// SOBRESCREVER toggleStatus: compatível com browser (sem AndroidNative)
+// ============================================================
+function toggleStatus(val) {
+  const isAvail = (val === 'AVAILABLE' || val === true);
+  localStorage.setItem('entregador_status', isAvail ? 'AVAILABLE' : 'UNAVAILABLE');
+  if (isAvail) {
+    BrowserGPS.start();
+  } else {
+    BrowserGPS.stop();
+  }
+  // Call Android native only if running inside WebView
+  try {
+    if (typeof AndroidNative !== 'undefined' && AndroidNative.setStatus) {
+      AndroidNative.setStatus(isAvail);
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// TRIP: ao salvar corrida, se GPS estiver ativo, preenche km automaticamente
+// ============================================================
+const _origOpenTripModal = openTripModal;
+openTripModal = function(tripId) {
+  _origOpenTripModal(tripId);
+  // Auto-fill km from GPS if no tripId (new trip) and GPS is running
+  if (!tripId && BrowserGPS.isTracking && BrowserGPS.totalKm > 0) {
+    const kmField = document.getElementById('trip-km');
+    if (kmField && !kmField.value) {
+      kmField.value = BrowserGPS.totalKm.toFixed(1);
+    }
+  }
+};
+
+// ============================================================
+// KEEP SCREEN AWAKE (evitar que iOS desligue o rastreamento)
+// ============================================================
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && BrowserGPS.isTracking) {
+    requestWakeLock();
+  }
+});
