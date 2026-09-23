@@ -444,14 +444,14 @@
     <div class="modal">
       <div class="modal-header">
         <h3 id="modal-trip-title">Nova Corrida</h3>
-        <button class="btn-icon" onclick="closeTripModal()">✕</button>
+        <button class="btn-close-modal" onclick="closeTripModal()">✕</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="trip-id" />
         
         <div class="form-group">
           <label>App / Plataforma</label>
-          <select id="trip-platform" class="input">
+          <select id="trip-platform" class="form-input">
             <option value="ifood">iFood</option>
             <option value="uber">Uber</option>
             <option value="noventa_nove">99 Food</option>
@@ -462,22 +462,22 @@
         <div style="display:flex; gap:12px;">
           <div class="form-group" style="flex:1;">
             <label>Valor (R$)</label>
-            <input type="number" id="trip-value" class="input" step="0.01" placeholder="Ex: 8.50" />
+            <input type="number" id="trip-value" class="form-input" step="0.01" placeholder="Ex: 8.50" />
           </div>
           <div class="form-group" style="flex:1;">
             <label>Distância (km)</label>
-            <input type="number" id="trip-km" class="input" step="0.1" placeholder="Ex: 4.2" />
+            <input type="number" id="trip-km" class="form-input" step="0.1" placeholder="Ex: 4.2" />
           </div>
         </div>
 
         <div class="form-group">
           <label>Tempo (minutos) - Opcional</label>
-          <input type="number" id="trip-time" class="input" step="1" placeholder="Ex: 15" />
+          <input type="number" id="trip-time" class="form-input" step="1" placeholder="Ex: 15" />
         </div>
 
         <div class="modal-footer" style="margin-top:16px;">
           <button class="btn btn-secondary" onclick="closeTripModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveTrip()">Salvar Corrida</button>
+          <button class="btn btn-primary" onclick="saveTrip()" style="background:#ff6b00; color:#fff;">Salvar Corrida</button>
         </div>
         
         <div id="trip-delete-wrap" style="margin-top:16px; display:none; text-align:center;">

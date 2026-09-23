@@ -1,4 +1,4 @@
-const CACHE_NAME = 'entregador-v1';
+const CACHE_NAME = 'entregador-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -10,16 +10,13 @@ const ASSETS = [
   '/icon-512.png'
 ];
 
-// Install: cache all assets
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Activate: clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -28,22 +25,15 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Skip non-GET and external requests (e.g. Chart.js CDN on first load)
   if (event.request.method !== 'GET') return;
-
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cache new requests that are same-origin
-        if (response.ok && event.request.url.startsWith(self.location.origin)) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => cached); // If offline, return whatever we have
-    })
+    fetch(event.request).then(response => {
+      if (response.ok && event.request.url.startsWith(self.location.origin)) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      }
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });
