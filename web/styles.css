@@ -977,3 +977,29 @@ select.form-input {
   bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px)) !important;
   right: 16px !important;
 }
+
+/* ══ TOP SPACING & COMPACT HEADER FIXES ══ */
+.header {
+  height: auto !important;
+  padding: max(10px, env(safe-area-inset-top, 10px)) 16px 10px 16px !important;
+  margin: 0 !important;
+}
+
+.page {
+  padding-top: 12px !important;
+  gap: 12px !important;
+}
+
+.section-title {
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+  padding-top: 0 !important;
+}
+
+.section-title h2 {
+  margin-top: 0 !important;
+}
+
+h2, h3, h4 {
+  margin-top: 0 !important;
+}
