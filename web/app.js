@@ -1,5 +1,5 @@
 ﻿/* =====================================================
-   APP.JS â€“ LÃ³gica principal, state, routing, UI
+   APP.JS – Lógica principal, state, routing, UI
    ===================================================== */
 
 // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -91,7 +91,7 @@ function renderHome() {
   // Hero cards
   setEl('h-receita',  fmtBRL(todayEarnings));
   setEl('h-km',       fmtKm(todayKm));
-  setEl('h-rpm',      todayRpm > 0 ? fmtRpKm(todayRpm) : 'â€”');
+  setEl('h-rpm',      todayRpm > 0 ? fmtRpKm(todayRpm) : '—');
   setEl('h-lucro',    fmtBRL(todayProfit));
 
   // Color
@@ -106,13 +106,13 @@ function renderHome() {
   // Mini stats week
   setEl('week-total-earn', fmtBRL(stats.totalEarnings));
   setEl('week-total-km',   fmtKm(stats.totalKm));
-  setEl('week-rpm-avg',    stats.totalKm > 0 ? fmtRpKm(stats.rpmKm) : 'â€”');
+  setEl('week-rpm-avg',    stats.totalKm > 0 ? fmtRpKm(stats.rpmKm) : '—');
   setEl('week-days-active', stats.activeDays + ' dia' + (stats.activeDays !== 1 ? 's' : ''));
 
   // Chart
   buildHomeChart('chart-home', last7);
 
-  // Alert: manutenÃ§Ã£o
+  // Alert: manutenção
   const alertWrap = document.getElementById('home-alerts');
   if (mainAlerts.length > 0) {
     alertWrap.innerHTML = mainAlerts.map(a =>
@@ -134,7 +134,7 @@ function renderDaysList(containerId, days, compact = false) {
   if (!days.length) {
     el.innerHTML = `<div class="empty-state">
       <div class="empty-icon">ðŸ“‹</div>
-      <p>Nenhum dia registrado ainda. Use o botÃ£o + para adicionar.</p>
+      <p>Nenhum dia registrado ainda. Use o botão + para adicionar.</p>
     </div>`;
     return;
   }
@@ -151,7 +151,7 @@ function renderDaysList(containerId, days, compact = false) {
       </div>
       <div class="day-item-right">
         <span class="fw-bold text-green">${fmtBRL(earn)}</span>
-        <span class="text-xs ${color}">${rpm > 0 ? fmtRpKm(rpm) : 'â€”'}</span>
+        <span class="text-xs ${color}">${rpm > 0 ? fmtRpKm(rpm) : '—'}</span>
       </div>
     </div>`;
   }).join('');
@@ -167,7 +167,7 @@ function renderWeek() {
 
   setEl('w-earn',   fmtBRL(stats.totalEarnings));
   setEl('w-km',     fmtKm(stats.totalKm));
-  setEl('w-rpm',    stats.totalKm > 0 ? fmtRpKm(stats.rpmKm) : 'â€”');
+  setEl('w-rpm',    stats.totalKm > 0 ? fmtRpKm(stats.rpmKm) : '—');
   setEl('w-profit', fmtBRL(stats.netProfit));
   setEl('w-fuel',   fmtBRL(stats.totalFuelCost));
   setEl('w-days',   stats.activeDays + ' dia' + (stats.activeDays !== 1 ? 's' : ''));
@@ -199,11 +199,11 @@ function renderWeek() {
   const effEl = document.getElementById('w-eff-alert');
   if (effEl) {
     if (stats.rpmKm >= 1.3) {
-      effEl.innerHTML = `<div class="alert alert-green">ðŸš€ Semana excelente! R$/km acima de R$1,30 â€” eficiÃªncia alta.</div>`;
+      effEl.innerHTML = `<div class="alert alert-green">ðŸš€ Semana excelente! R$/km acima de R$1,30 — eficiência alta.</div>`;
     } else if (stats.rpmKm >= 1.0) {
-      effEl.innerHTML = `<div class="alert alert-green">âœ… OperaÃ§Ã£o viÃ¡vel â€” R$/km acima de R$1,00.</div>`;
+      effEl.innerHTML = `<div class="alert alert-green">✅… Operação viável — R$/km acima de R$1,00.</div>`;
     } else if (stats.rpmKm > 0) {
-      effEl.innerHTML = `<div class="alert alert-yellow">âš ï¸ R$/km abaixo de R$1,00 â€” revise aceitaÃ§Ã£o de pedidos.</div>`;
+      effEl.innerHTML = `<div class="alert alert-yellow">âš ï¸ R$/km abaixo de R$1,00 — revise aceitação de pedidos.</div>`;
     } else {
       effEl.innerHTML = '';
     }
@@ -244,7 +244,7 @@ function renderFuel() {
   if (!logs.length) {
     listEl.innerHTML = `<div class="empty-state">
       <div class="empty-icon">â›½</div>
-      <p>Nenhum abastecimento registrado. Use o botÃ£o + para adicionar.</p>
+      <p>Nenhum abastecimento registrado. Use o botão + para adicionar.</p>
     </div>`;
     return;
   }
@@ -260,7 +260,7 @@ function renderFuel() {
       <div class="text-right">
         <div class="fw-bold text-yellow">${fmtBRL(l.total_paid)}</div>
         ${kml ? `<div class="text-xs ${kml >= DB.getAvgKmL() * 0.9 ? 'text-green' : 'text-yellow'}">${kml.toFixed(1)} km/L</div>` : ''}
-        <button class="btn btn-danger btn-sm mt-4" onclick="deleteFuelLog('${l.id}')">âœ•</button>
+        <button class="btn btn-danger btn-sm mt-4" onclick="deleteFuelLog('${l.id}')">✅•</button>
       </div>
     </div>`;
   }).join('');
@@ -286,16 +286,16 @@ function renderApps() {
   const bestEl = document.getElementById('apps-best');
   if (bestEl) {
     if (best && best.rpmKm > 0) {
-      bestEl.innerHTML = `<div class="alert alert-green">â­ App mais eficiente da semana: <strong>${best.label}</strong> â€” ${fmtRpKm(best.rpmKm)}</div>`;
+      bestEl.innerHTML = `<div class="alert alert-green">â­ App mais eficiente da semana: <strong>${best.label}</strong> — ${fmtRpKm(best.rpmKm)}</div>`;
     } else {
       bestEl.innerHTML = '';
     }
   }
 
-  // Table â€“ semana
+  // Table – semana
   renderAppTable('apps-week-table', weekStats);
 
-  // Table â€“ geral
+  // Table – geral
   renderAppTable('apps-all-table', allStats);
 
   // Doughnut
@@ -317,7 +317,7 @@ function renderAppTable(id, stats) {
       <span class="fw-bold">${a.label}</span>
     </td>
     <td class="text-green fw-bold">${fmtBRL(a.earnings)}</td>
-    <td class="${a.rpmKm >= 1 ? 'text-green' : 'text-yellow'} fw-bold">${a.rpmKm > 0 ? 'R$' + a.rpmKm.toFixed(2) : 'â€”'}</td>
+    <td class="${a.rpmKm >= 1 ? 'text-green' : 'text-yellow'} fw-bold">${a.rpmKm > 0 ? 'R$' + a.rpmKm.toFixed(2) : '—'}</td>
     <td><span class="badge badge-blue">${a.pct.toFixed(0)}%</span></td>
   </tr>`).join('');
 }
@@ -354,7 +354,7 @@ function renderManut() {
   if (alertWrap) {
     alertWrap.innerHTML = alerts.length > 0
       ? alerts.map(a => `<div class="alert alert-${a.type}"><span>${a.icon}</span><span>${a.msg}</span></div>`).join('')
-      : `<div class="alert alert-green">âœ… ManutenÃ§Ã£o em dia â€” tudo ok!</div>`;
+      : `<div class="alert alert-green">✅… Manutenção em dia — tudo ok!</div>`;
   }
 }
 
@@ -370,7 +370,7 @@ function openDayModal(id) {
     <div class="modal-overlay" id="modal-day" onclick="closeModal('modal-day', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">${isEdit ? 'âœï¸ Editar Dia' : 'âž• Registrar Dia'}</div>
+        <div class="modal-title">${isEdit ? '✅ï¸ Editar Dia' : '➕ Registrar Dia'}</div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Data</label>
@@ -378,7 +378,7 @@ function openDayModal(id) {
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">QuilÃ´metros</label>
+              <label class="form-label">Quilômetros</label>
               <input type="number" id="f-km" class="form-input" placeholder="0.0" step="0.1" min="0" value="${day?.km || ''}">
             </div>
             <div class="form-group">
@@ -391,24 +391,24 @@ function openDayModal(id) {
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" style="color:#ef4444">ðŸ”´ iFood</label>
+              <label class="form-label" style="color:#ef4444">🔴 iFood</label>
               <input type="number" id="f-ifood" class="form-input" placeholder="0.00" step="0.01" min="0" value="${day?.apps?.ifood || ''}">
             </div>
             <div class="form-group">
-              <label class="form-label" style="color:#94a3b8">âš« Uber</label>
+              <label class="form-label" style="color:#94a3b8">⚫ Uber</label>
               <input type="number" id="f-uber" class="form-input" placeholder="0.00" step="0.01" min="0" value="${day?.apps?.uber || ''}">
             </div>
             <div class="form-group">
-              <label class="form-label" style="color:#f59e0b">ðŸŸ¡ 99 Food</label>
+              <label class="form-label" style="color:#f59e0b">🟡 99 Food</label>
               <input type="number" id="f-99" class="form-input" placeholder="0.00" step="0.01" min="0" value="${day?.apps?.noventa_nove || ''}">
             </div>
             <div class="form-group">
-              <label class="form-label" style="color:#3b82f6">ðŸ”µ Lalamove</label>
+              <label class="form-label" style="color:#3b82f6">🔵 Lalamove</label>
               <input type="number" id="f-lala" class="form-input" placeholder="0.00" step="0.01" min="0" value="${day?.apps?.lalamove || ''}">
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">ObservaÃ§Ãµes</label>
+            <label class="form-label">Observações</label>
             <input type="text" id="f-notes" class="form-input" placeholder="Ex: dia lento, chuva..." value="${day?.notes || ''}">
           </div>
         </div>
@@ -429,7 +429,7 @@ function openDayModal(id) {
 
 function updateDayTotal() {
   const vals = ['f-ifood','f-uber','f-99','f-lala'].map(id => parseFloat(document.getElementById(id)?.value)||0);
-  // (no display element needed â€“ total is computed on save)
+  // (no display element needed – total is computed on save)
 }
 
 function saveDay() {
@@ -457,10 +457,10 @@ function saveDay() {
   const id = STATE.editingDayId;
   if (id) {
     DB.updateDay(id, payload);
-    toast('âœ… Dia atualizado');
+    toast('✅… Dia atualizado');
   } else {
     DB.addDay(payload);
-    toast('âœ… Dia registrado');
+    toast('✅… Dia registrado');
   }
 
   closeModal('modal-day');
@@ -472,7 +472,7 @@ function deleteDay(id) {
   DB.deleteDay(id);
   closeModal('modal-day');
   renderPage(STATE.page);
-  toast('Dia excluÃ­do');
+  toast('Dia excluído');
 }
 
 // â”€â”€ Modal: Fuel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -505,11 +505,11 @@ function openFuelModal() {
             <input type="number" id="ff-total" class="form-input" placeholder="0.00" step="0.01" min="0">
           </div>
           <div class="form-group">
-            <label class="form-label">Km rodados desde Ãºltimo abastecimento</label>
+            <label class="form-label">Km rodados desde último abastecimento</label>
             <input type="number" id="ff-km" class="form-input" placeholder="0" step="0.1" min="0">
           </div>
           <div class="alert alert-blue" style="margin-top:4px">
-            â„¹ï¸ Informe os km rodados desde o Ãºltimo abastecimento para calcular km/L.
+            â„¹ï¸ Informe os km rodados desde o último abastecimento para calcular km/L.
           </div>
         </div>
         <div class="modal-footer">
@@ -556,7 +556,7 @@ function saveFuel() {
 
   closeModal('modal-fuel');
   renderFuel();
-  toast('âœ… Abastecimento registrado');
+  toast('✅… Abastecimento registrado');
 }
 
 // â”€â”€ Modal: Maintenance edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -568,33 +568,33 @@ function openManutModal() {
     <div class="modal-overlay" id="modal-manut" onclick="closeModal('modal-manut', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">ðŸ”§ Editar ManutenÃ§Ã£o</div>
+        <div class="modal-title">ðŸ”§ Editar Manutenção</div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Modelo da moto</label>
             <input type="text" id="mm-model" class="form-input" value="${s.bike_model}">
           </div>
           <div class="form-group">
-            <label class="form-label">OdÃ´metro total (km)</label>
+            <label class="form-label">Odômetro total (km)</label>
             <input type="number" id="mm-odo" class="form-input" value="${m.odometer_total}">
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Km na Ãºltima troca de Ã³leo</label>
+              <label class="form-label">Km na última troca de óleo</label>
               <input type="number" id="mm-oil" class="form-input" value="${m.last_oil_km}">
             </div>
             <div class="form-group">
-              <label class="form-label">Intervalo de Ã³leo (km)</label>
+              <label class="form-label">Intervalo de óleo (km)</label>
               <input type="number" id="mm-oil-int" class="form-input" value="${m.oil_interval_km}">
             </div>
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Km na Ãºltima revisÃ£o</label>
+              <label class="form-label">Km na última revisão</label>
               <input type="number" id="mm-rev" class="form-input" value="${m.last_revision_km}">
             </div>
             <div class="form-group">
-              <label class="form-label">Intervalo de revisÃ£o (km)</label>
+              <label class="form-label">Intervalo de revisão (km)</label>
               <input type="number" id="mm-rev-int" class="form-input" value="${m.revision_interval_km}">
             </div>
           </div>
@@ -619,7 +619,7 @@ function saveManut() {
   DB.updateSettings({ bike_model: document.getElementById('mm-model')?.value || 'CG 105cc' });
   closeModal('modal-manut');
   renderManut();
-  toast('âœ… ManutenÃ§Ã£o atualizada');
+  toast('✅… Manutenção atualizada');
 }
 
 // â”€â”€ Modal: Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -629,14 +629,14 @@ function openSettingsModal() {
     <div class="modal-overlay" id="modal-settings" onclick="closeModal('modal-settings', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">âš™ï¸ ConfiguraÃ§Ãµes</div>
+        <div class="modal-title">âš™ï¸ Configurações</div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">PreÃ§o da gasolina (R$/L)</label>
             <input type="number" id="s-price" class="form-input" value="${s.fuel_price}" step="0.01">
           </div>
           <div class="form-group">
-            <label class="form-label">Consumo estimado (km/L) â€” usado quando nÃ£o hÃ¡ histÃ³rico</label>
+            <label class="form-label">Consumo estimado (km/L) — usado quando não há histórico</label>
             <input type="number" id="s-kml" class="form-input" value="${s.bike_km_l_estimate}" step="0.1">
           </div>
           <div class="form-group">
@@ -663,11 +663,11 @@ function saveSettings() {
   });
   closeModal('modal-settings');
   renderPage(STATE.page);
-  toast('âœ… ConfiguraÃ§Ãµes salvas');
+  toast('✅… Configurações salvas');
 }
 
 function resetData() {
-  if (!confirm('Resetar TODOS os dados? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) return;
+  if (!confirm('Resetar TODOS os dados? Esta ação não pode ser desfeita.')) return;
   DB.reset();
   closeModal('modal-settings');
   renderPage(STATE.page);

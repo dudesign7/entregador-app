@@ -1,10 +1,10 @@
 /* =====================================================
-   DB.JS - Camada de Dados Hardened para Produção
+   DB.JS - Camada de Dados Hardened para Produçãoo
    ===================================================== */
 
 const DB_KEY = 'entregador_v4';
 
-// Helper de Sanitização XSS Global
+// Helper de Sanitizaçãoo XSS Global
 function sanitizeHTML(str) {
   if (typeof str !== 'string') return '';
   return str

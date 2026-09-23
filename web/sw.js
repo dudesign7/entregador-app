@@ -1,4 +1,4 @@
-const CACHE_NAME = 'entregador-v2';
+const CACHE_NAME = 'entregador-v3';
 const ASSETS = [
   '/',
   '/index.html',

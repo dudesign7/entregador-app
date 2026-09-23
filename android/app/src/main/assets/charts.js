@@ -1,5 +1,5 @@
 /* =====================================================
-   CHARTS.JS – Configurações Chart.js
+   CHARTS.JS – Configuraçõeses Chart.js
    ===================================================== */
 
 Chart.defaults.color = '#94a3b8';

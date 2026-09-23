@@ -56,23 +56,20 @@
     <!-- 🟢🔴 PAGE: HOME 🟢🔴 -->
     <main id="page-home" class="page active">
 
-      <!-- Status Toggle & Actions -->
-      <div class="flex items-center justify-between" style="background:#1e293b; padding:12px; border-radius:8px; margin-bottom:16px;">
-        <div class="status-toggle-wrap" onclick="toggleStatusUI()">
-          <div id="status-toggle-bg" class="status-toggle-bg"></div>
-          <div id="status-btn-off" class="status-btn active">Desativado</div>
-          <div id="status-btn-on" class="status-btn">Ativo</div>
-        </div>
-        <button class="btn btn-primary" onclick="openTripModal()" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Nova Corrida</button>
-      </div>
-
-      <!-- Date -->
-      <div class="flex items-center justify-between">
+      <!-- Home Header -->
+      <div class="flex items-center justify-between" style="margin-bottom:16px;">
         <div>
           <h4>Hoje</h4>
           <span id="home-date" class="text-sm text-muted"></span>
         </div>
+        <button class="btn btn-primary" onclick="openDayModal(null)" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Registrar</button>
       </div>
+
+      
+        <button class="btn btn-primary" onclick="openTripModal()" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Nova Corrida</button>
+      </div>
+
+      
 
       <!-- Hero cards -->
       <div class="hero-grid">
