@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Entregador</string>
+    <string name="accessibility_service_description">
+        O Assistente de Entregas monitora automaticamente os apps iFood, Uber Driver, 99 Motorista
+        e Lalamove para detectar o início e fim de cada corrida, ativar o GPS e calcular em
+        tempo real o lucro líquido, quilometragem e consumo de combustível. Nenhum dado pessoal
+        é coletado ou enviado a servidores externos.
+    </string>
+</resources>

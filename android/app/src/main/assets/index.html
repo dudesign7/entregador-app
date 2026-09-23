@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🚚 Entregador</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ══ HEADER ══ -->
+    <header class="header">
+      <div class="header-logo">
+        <span class="logo-icon">🚚</span>
+        <h1 style="font-size:1.1rem">Entregador</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-icon" onclick="openSettingsModal()" title="Configurações">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 🟢🔴 PAGE: HOME 🟢🔴 -->
+    <main id="page-home" class="page active">
+
+      <!-- Status Toggle & Actions -->
+      <div class="flex items-center justify-between" style="background:#1e293b; padding:12px; border-radius:8px; margin-bottom:16px;">
+        <div class="status-toggle-wrap" onclick="toggleStatusUI()">
+          <div id="status-toggle-bg" class="status-toggle-bg"></div>
+          <div id="status-btn-off" class="status-btn active">Desativado</div>
+          <div id="status-btn-on" class="status-btn">Ativo</div>
+        </div>
+        <button class="btn btn-primary" onclick="openTripModal()" style="padding:8px 16px; background:#ff6b00; color:#fff;">+ Nova Corrida</button>
+      </div>
+
+      <!-- Date -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h4>Hoje</h4>
+          <span id="home-date" class="text-sm text-muted"></span>
+        </div>
+      </div>
+
+      <!-- Hero cards -->
+      <div class="hero-grid">
+        <div class="hero-card c-green">
+          <span class="hero-card-label">💰 Receita</span>
+          <span id="h-receita" class="hero-card-value text-green">R$ 0,00</span>
+          <span class="hero-card-sub">receita bruta</span>
+        </div>
+        <div class="hero-card c-blue">
+          <span class="hero-card-label">📍 Quilômetros</span>
+          <span id="h-km" class="hero-card-value text-blue">0 km</span>
+          <span class="hero-card-sub">rodados hoje</span>
+        </div>
+        <div class="hero-card c-yellow">
+          <span class="hero-card-label">📈 R$/km</span>
+          <span id="h-rpm" class="hero-card-value">—</span>
+          <span id="h-rpm-sub" class="hero-card-sub">eficiência</span>
+        </div>
+        <div class="hero-card c-purple">
+          <span class="hero-card-label">💸 Lucro líquido</span>
+          <span id="h-lucro" class="hero-card-value">R$ 0,00</span>
+          <span id="h-lucro-sub" class="hero-card-sub">após combustível</span>
+        </div>
+      </div>
+
+      <!-- Maintenance alerts -->
+      <div id="home-alerts" class="hidden" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- Week summary mini -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📅 Esta semana</h3>
+          <button class="btn btn-secondary btn-sm" onclick="navigate('week')">Ver tudo →</button>
+        </div>
+        <div class="hero-grid" style="gap:8px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span class="text-xs text-muted">Receita</span>
+            <span id="week-total-earn" class="fw-bold text-green">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span class="text-xs text-muted">Km total</span>
+            <span id="week-total-km" class="fw-bold text-blue">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span class="text-xs text-muted">Média R$/km</span>
+            <span id="week-rpm-avg" class="fw-bold">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span class="text-xs text-muted">Dias ativos</span>
+            <span id="week-days-active" class="fw-bold">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📊 Últimos 7 dias</h3>
+          <div class="flex gap-4">
+            <span class="badge badge-green" style="font-size:0.65rem">Receita</span>
+            <span class="badge badge-blue" style="font-size:0.65rem">Km</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-home"></canvas>
+        </div>
+      </div>
+
+      <!-- Today Trips -->
+      <div class="section-title">
+        <h2>🏍️ Corridas de Hoje</h2>
+      </div>
+      <div id="home-trips-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+    </main>
+
+    <!-- ══ PAGE: SEMANA ══ -->
+    <main id="page-week" class="page">
+
+      <div class="section-title">
+        <h2>📅 Semana atual</h2>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero-grid">
+        <div class="hero-card c-green">
+          <span class="hero-card-label">💰 Receita total</span>
+          <span id="w-earn" class="hero-card-value text-green">—</span>
+          <span class="hero-card-sub">bruta</span>
+        </div>
+        <div class="hero-card c-blue">
+          <span class="hero-card-label">📍 Km total</span>
+          <span id="w-km" class="hero-card-value text-blue">—</span>
+          <span class="hero-card-sub">rodados</span>
+        </div>
+        <div class="hero-card c-yellow">
+          <span class="hero-card-label">📈 R$/km médio</span>
+          <span id="w-rpm" class="hero-card-value">—</span>
+          <span class="hero-card-sub">eficiência</span>
+        </div>
+        <div class="hero-card c-purple">
+          <span class="hero-card-label">💸 Lucro líquido</span>
+          <span id="w-profit" class="hero-card-value">—</span>
+          <span class="hero-card-sub">após combustível</span>
+        </div>
+      </div>
+
+      <!-- Extra stats -->
+      <div class="card card-sm">
+        <div class="stat-row">
+          <span class="stat-row-label">⛽ Custo combustível estimado</span>
+          <span id="w-fuel" class="stat-row-value text-red">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">📆 Dias ativos</span>
+          <span id="w-days" class="stat-row-value">—</span>
+        </div>
+      </div>
+
+      <!-- Efficiency insight -->
+      <div id="w-eff-alert"></div>
+
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📊 Receita vs Km por dia</h3>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-week"></canvas>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="card">
+        <h3 style="margin-bottom:12px">🏆 Ranking de dias</h3>
+        <div id="w-ranking"></div>
+      </div>
+
+      <!-- Days list -->
+      <div class="section-title">
+        <h2>🗓️ Dias da semana</h2>
+        <button class="btn btn-secondary btn-sm" onclick="openDayModal(null)">+ Adicionar</button>
+      </div>
+      <div id="w-days-list"></div>
+
+    </main>
+
+    <!-- ══ PAGE: COMBUSTÍVEL ══ -->
+    <main id="page-fuel" class="page">
+
+      <div class="section-title">
+        <h2>⛽ Combustível</h2>
+      </div>
+
+      <!-- KPIs -->
+      <div class="hero-grid">
+        <div class="hero-card c-yellow">
+          <span class="hero-card-label">⚡ Consumo médio</span>
+          <span id="f-kml" class="hero-card-value text-yellow">—</span>
+          <span id="f-est-tag" class="hero-card-sub"></span>
+        </div>
+        <div class="hero-card c-red">
+          <span class="hero-card-label">💸 Custo/km</span>
+          <span id="f-cpkm" class="hero-card-value text-red">—</span>
+          <span class="hero-card-sub">gasto em combustível</span>
+        </div>
+      </div>
+
+      <div class="card card-sm">
+        <div class="stat-row">
+          <span class="stat-row-label">⛽ Preço gasolina</span>
+          <span id="f-price" class="stat-row-value text-yellow">—</span>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div id="f-alert"></div>
+
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📊 Histórico km/L</h3>
+        </div>
+        <div class="chart-wrap chart-wrap-sm">
+          <canvas id="chart-fuel"></canvas>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="section-title">
+        <h2>🧾 Abastecimentos</h2>
+      </div>
+      <div id="f-logs-list"></div>
+
+    </main>
+
+    <!-- ══ PAGE: APPS ══ -->
+    <main id="page-apps" class="page">
+
+      <div class="section-title">
+        <h2>📱 Apps</h2>
+      </div>
+
+      <!-- Best app -->
+      <div id="apps-best"></div>
+
+      <!-- Doughnut -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🥧 Participação na receita</h3>
+          <span class="text-xs text-muted">semana atual</span>
+        </div>
+        <div class="chart-wrap-pie">
+          <canvas id="chart-apps"></canvas>
+        </div>
+      </div>
+
+      <!-- Table semana -->
+      <div class="card">
+        <h3 style="margin-bottom:12px">📅 Esta semana</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>App</th>
+                <th>Receita</th>
+                <th>R$/km</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody id="apps-week-table">
+              <tr><td colspan="4" class="text-muted text-sm text-center" style="padding:16px">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Table geral -->
+      <div class="card">
+        <h3 style="margin-bottom:12px">🗂️ Histórico geral</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>App</th>
+                <th>Receita</th>
+                <th>R$/km</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody id="apps-all-table">
+              <tr><td colspan="4" class="text-muted text-sm text-center" style="padding:16px">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ══ PAGE: MANUTENÇÃO ══ -->
+    <main id="page-manut" class="page">
+
+      <div class="flex items-center justify-between">
+        <h2>🔧 Manutenção</h2>
+        <button class="btn btn-secondary btn-sm" onclick="openManutModal()">Editar</button>
+      </div>
+
+      <!-- Odo -->
+      <div class="card">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4>🏍️ <span id="m-bike">CG 105cc</span></h4>
+            <div class="text-3xl mt-4" id="m-odo">0 km</div>
+            <div class="text-sm text-muted mt-4">odômetro total registrado</div>
+          </div>
+          <div class="card-icon icon-blue" style="width:52px;height:52px;font-size:1.6rem">🏍️</div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div id="m-alerts" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- Oil -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🛢️ Troca de óleo</h3>
+          <button class="btn btn-secondary btn-sm" onclick="markOilChanged()">✅ Feito</button>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Km desde última troca</span>
+          <span id="m-oil-since" class="stat-row-value">—</span>
+        </div>
+        <div class="stat-row" style="border:none">
+          <span id="m-oil-remain" class="text-sm text-muted">—</span>
+        </div>
+        <div id="m-oil-bar" class="progress-wrap mt-8">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill green" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revision -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🔧 Revisão geral</h3>
+          <button class="btn btn-secondary btn-sm" onclick="markRevisionDone()">✅ Feito</button>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Km desde última revisão</span>
+          <span id="m-rev-since" class="stat-row-value">—</span>
+        </div>
+        <div class="stat-row" style="border:none">
+          <span id="m-rev-remain" class="text-sm text-muted">—</span>
+        </div>
+        <div id="m-rev-bar" class="progress-wrap mt-8">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill green" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ══ BOTTOM NAV ══ -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="home">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+        </svg>
+        <span>Início</span>
+      </button>
+      <button class="nav-item" data-page="week">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+        </svg>
+        <span>Semana</span>
+      </button>
+      <button class="nav-item" data-page="fuel">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/>
+        </svg>
+        <span>Combustível</span>
+      </button>
+      <button class="nav-item" data-page="apps">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>
+        </svg>
+        <span>Apps</span>
+      </button>
+      <button class="nav-item" data-page="manut">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8.952-.282a5.25 5.25 0 0 1 6.341 6.341l-.282.952M11.42 15.17l-5.8-5.8"/>
+        </svg>
+        <span>Manutenção</span>
+      </button>
+    </nav>
+
+    <!-- ══ FAB ══ -->
+    <button id="fab" class="fab" title="Adicionar">＋</button>
+
+    <!-- ══ TOAST ══ -->
+    <div id="toast"></div>
+
+  </div><!-- /#app -->
+
+  <!-- 🟢🔴 TRIP MODAL 🟢🔴 -->
+  <div id="modal-trip" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-trip-title">Nova Corrida</h3>
+        <button class="btn-icon" onclick="closeTripModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="trip-id" />
+        
+        <div class="form-group">
+          <label>App / Plataforma</label>
+          <select id="trip-platform" class="input">
+            <option value="ifood">iFood</option>
+            <option value="uber">Uber</option>
+            <option value="noventa_nove">99 Food</option>
+            <option value="lalamove">Lalamove</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label>Valor (R$)</label>
+            <input type="number" id="trip-value" class="input" step="0.01" placeholder="Ex: 8.50" />
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Distância (km)</label>
+            <input type="number" id="trip-km" class="input" step="0.1" placeholder="Ex: 4.2" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tempo (minutos) - Opcional</label>
+          <input type="number" id="trip-time" class="input" step="1" placeholder="Ex: 15" />
+        </div>
+
+        <div class="modal-footer" style="margin-top:16px;">
+          <button class="btn btn-secondary" onclick="closeTripModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveTrip()">Salvar Corrida</button>
+        </div>
+        
+        <div id="trip-delete-wrap" style="margin-top:16px; display:none; text-align:center;">
+          <button class="btn" style="background:transparent; color:#ef4444; border:1px solid #ef4444;" onclick="deleteTrip()">Excluir Corrida</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="db.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Maintenance quick actions (inline, needs access to DB) -->
+  <script>
+    function markOilChanged() {
+      const m = DB.getMaintenance();
+      DB.updateMaintenance({ last_oil_km: m.odometer_total });
+      renderManut();
+      toast('✅ Troca de óleo registrada!');
+    }
+
+    function markRevisionDone() {
+      const m = DB.getMaintenance();
+      DB.updateMaintenance({ last_revision_km: m.odometer_total });
+      renderManut();
+      toast('✅ Revisão registrada!');
+    }
+  </script>
+</body>
+</html>
