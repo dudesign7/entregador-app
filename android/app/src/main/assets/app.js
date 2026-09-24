@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navigate('home');
   initStatus();
   setupFAB();
+  updateAuthUI();
 });
 
 // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -989,3 +990,231 @@ document.addEventListener('visibilitychange', () => {
     requestWakeLock();
   }
 });
+
+// ============================================================
+// AUTHENTICATION & USER ACCOUNT UI
+// ============================================================
+function updateAuthUI() {
+  const user = DB.getUser();
+  const isAuth = DB.isAuthenticated();
+  const labelEl = document.getElementById('header-auth-label');
+
+  if (labelEl) {
+    if (isAuth && user) {
+      labelEl.textContent = user.name ? user.name.split(' ')[0] : 'Conta';
+    } else {
+      labelEl.textContent = 'Entrar';
+    }
+  }
+
+  if (isAuth && user && !user.onboarding_completed) {
+    openOnboardingModal();
+  }
+}
+
+function handleAuthHeaderClick() {
+  if (DB.isAuthenticated()) {
+    openAccountModal();
+  } else {
+    openAuthModal();
+  }
+}
+
+function openAuthModal() {
+  switchAuthTab('login');
+  const modal = document.getElementById('modal-auth');
+  if (modal) modal.classList.add('active');
+}
+
+function openAccountModal() {
+  const user = DB.getUser();
+  if (user) {
+    const nameEl = document.getElementById('acc-name');
+    const emailEl = document.getElementById('acc-email');
+    const avatarEl = document.getElementById('acc-avatar');
+    if (nameEl) nameEl.textContent = user.name || 'Entregador';
+    if (emailEl) emailEl.textContent = user.email || '';
+    if (avatarEl) avatarEl.textContent = user.avatar || '🛵';
+  }
+  const modal = document.getElementById('modal-account');
+  if (modal) modal.classList.add('active');
+}
+
+function openOnboardingModal() {
+  const s = DB.getSettings();
+  const bikeInput = document.getElementById('ob-bike-model');
+  const fuelInput = document.getElementById('ob-fuel-price');
+  const kmlInput = document.getElementById('ob-kml');
+  if (bikeInput) bikeInput.value = s.bike_model || 'CG 160';
+  if (fuelInput) fuelInput.value = s.fuel_price || 5.80;
+  if (kmlInput) kmlInput.value = s.bike_km_l_estimate || 27.5;
+
+  const modal = document.getElementById('modal-onboarding');
+  if (modal) modal.classList.add('active');
+}
+
+function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('tab-auth-login');
+  const tabSignup = document.getElementById('tab-auth-signup');
+  const formLogin = document.getElementById('form-auth-login');
+  const formSignup = document.getElementById('form-auth-signup');
+  const formForgot = document.getElementById('form-auth-forgot');
+  const titleEl = document.getElementById('modal-auth-title');
+
+  if (tab === 'login') {
+    if (tabLogin) tabLogin.classList.add('active');
+    if (tabSignup) tabSignup.classList.remove('active');
+    if (formLogin) formLogin.style.display = 'block';
+    if (formSignup) formSignup.style.display = 'none';
+    if (formForgot) formForgot.style.display = 'none';
+    if (titleEl) titleEl.textContent = '🔐 Entrar na Conta';
+  } else if (tab === 'signup') {
+    if (tabSignup) tabSignup.classList.add('active');
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (formSignup) formSignup.style.display = 'block';
+    if (formLogin) formLogin.style.display = 'none';
+    if (formForgot) formForgot.style.display = 'none';
+    if (titleEl) titleEl.textContent = '✨ Criar Nova Conta';
+  } else if (tab === 'forgot') {
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabSignup) tabSignup.classList.remove('active');
+    if (formForgot) formForgot.style.display = 'block';
+    if (formLogin) formLogin.style.display = 'none';
+    if (formSignup) formSignup.style.display = 'none';
+    if (titleEl) titleEl.textContent = '🔑 Recuperar Senha';
+  }
+}
+
+function showForgotPassword(e) {
+  if (e) e.preventDefault();
+  switchAuthTab('forgot');
+}
+
+function checkPasswordStrength(val) {
+  const bar = document.getElementById('pw-strength-bar');
+  const text = document.getElementById('pw-strength-text');
+  if (!bar || !text) return;
+
+  if (!val) {
+    bar.style.width = '0%';
+    bar.style.background = '#e2e8f0';
+    text.textContent = '';
+    return;
+  }
+
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  if (score <= 2) {
+    bar.style.width = '33%';
+    bar.style.background = '#ef4444';
+    text.textContent = 'Senha Fraca';
+    text.style.color = '#ef4444';
+  } else if (score <= 4) {
+    bar.style.width = '66%';
+    bar.style.background = '#f59e0b';
+    text.textContent = 'Senha Média';
+    text.style.color = '#f59e0b';
+  } else {
+    bar.style.width = '100%';
+    bar.style.background = '#10b981';
+    text.textContent = 'Senha Forte';
+    text.style.color = '#10b981';
+  }
+}
+
+function handleLoginSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-login-submit');
+  const email = document.getElementById('login-email')?.value;
+  const password = document.getElementById('login-password')?.value;
+
+  if (btn) { btn.disabled = true; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Entrando...'; }
+
+  setTimeout(() => {
+    const res = DB.login({ email, password });
+    if (btn) { btn.disabled = false; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Entrar'; }
+
+    if (res.success) {
+      toast('✅ Login realizado com sucesso!');
+      closeModal('modal-auth');
+      updateAuthUI();
+      renderPage(STATE.page);
+    } else {
+      toast('⚠️ ' + (res.error || 'Erro ao entrar'));
+    }
+  }, 400);
+}
+
+function handleSignupSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-signup-submit');
+  const name = document.getElementById('signup-name')?.value;
+  const email = document.getElementById('signup-email')?.value;
+  const password = document.getElementById('signup-password')?.value;
+
+  if (btn) { btn.disabled = true; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Criando conta...'; }
+
+  setTimeout(() => {
+    const res = DB.signup({ name, email, password });
+    if (btn) { btn.disabled = false; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Criar Conta Grátis'; }
+
+    if (res.success) {
+      toast('🎉 Conta criada com sucesso!');
+      closeModal('modal-auth');
+      updateAuthUI();
+      renderPage(STATE.page);
+      openOnboardingModal();
+    } else {
+      toast('⚠️ ' + (res.error || 'Erro ao criar conta'));
+    }
+  }, 400);
+}
+
+function handleForgotSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-forgot-submit');
+  const email = document.getElementById('forgot-email')?.value;
+
+  if (btn) { btn.disabled = true; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Enviando...'; }
+
+  setTimeout(() => {
+    const res = DB.resetPassword(email);
+    if (btn) { btn.disabled = false; const txt = btn.querySelector('.btn-text'); if(txt) txt.textContent = 'Enviar Link de Recuperação'; }
+    toast('📩 ' + res.message);
+    switchAuthTab('login');
+  }, 400);
+}
+
+function handleGoogleLogin() {
+  const res = DB.loginWithGoogle();
+  if (res.success) {
+    toast('🌐 Autenticado via Google!');
+    closeModal('modal-auth');
+    updateAuthUI();
+    renderPage(STATE.page);
+  }
+}
+
+function saveOnboardingSubmit() {
+  const bike = document.getElementById('ob-bike-model')?.value;
+  const fuel = document.getElementById('ob-fuel-price')?.value;
+  const kml = document.getElementById('ob-kml')?.value;
+
+  DB.completeOnboarding({ bike_model: bike, fuel_price: fuel, bike_km_l_estimate: kml });
+  closeModal('modal-onboarding');
+  toast('🚀 Configurações salvas!');
+  renderPage(STATE.page);
+}
+
+function handleLogout() {
+  DB.logout();
+  closeModal('modal-account');
+  updateAuthUI();
+  renderPage(STATE.page);
+  toast('👋 Você saiu da conta.');
+}

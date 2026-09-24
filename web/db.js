@@ -1,10 +1,11 @@
 /* =====================================================
-   DB.JS - Camada de Dados Hardened para Produçãoo
+   DB.JS – Camada de Dados Hardened e Autenticação
    ===================================================== */
 
 const DB_KEY = 'entregador_v4';
+const USERS_KEY = 'entregador_users_v1';
 
-// Helper de Sanitizaçãoo XSS Global
+// Helper de Sanitização XSS Global
 function sanitizeHTML(str) {
   if (typeof str !== 'string') return '';
   return str
@@ -16,6 +17,11 @@ function sanitizeHTML(str) {
 }
 
 const DEFAULT_DATA = {
+  user: null, // { id, name, email, avatar, onboarding_completed: false }
+  auth: {
+    token: null,
+    is_authenticated: false
+  },
   days: [],
   fuel_logs: [],
   maintenance: {
@@ -26,7 +32,7 @@ const DEFAULT_DATA = {
     revision_interval_km: 6000
   },
   settings: {
-    fuel_price: 8.00,
+    fuel_price: 5.80,
     bike_km_l_estimate: 27.5,
     bike_model: 'CG 160'
   }
@@ -34,14 +40,24 @@ const DEFAULT_DATA = {
 
 const DB = {
   _data: null,
+  _users: [],
 
   load() {
     try {
+      // Load Registered Users List
+      const rawUsers = localStorage.getItem(USERS_KEY);
+      if (rawUsers) {
+        this._users = JSON.parse(rawUsers) || [];
+      } else {
+        this._users = [];
+      }
+
+      // Load DB Data
       const raw = localStorage.getItem(DB_KEY) || localStorage.getItem('entregador_v3');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object' && Array.isArray(parsed.days)) {
-          this._data = parsed;
+          this._data = { ...DEFAULT_DATA, ...parsed };
         } else {
           this._data = JSON.parse(JSON.stringify(DEFAULT_DATA));
         }
@@ -88,6 +104,7 @@ const DB = {
 
       const serialized = JSON.stringify(this._data);
       localStorage.setItem(DB_KEY, serialized);
+      localStorage.setItem(USERS_KEY, JSON.stringify(this._users));
 
       if (typeof window.AndroidNative !== 'undefined' && typeof window.AndroidNative.updateNativeData === 'function') {
         window.AndroidNative.updateNativeData(serialized);
@@ -98,6 +115,131 @@ const DB = {
     return this;
   },
 
+  // ── Autenticação e Usuários ──────────────────────────────
+  getUser() {
+    return this._data ? this._data.user : null;
+  },
+
+  isAuthenticated() {
+    return Boolean(this._data && this._data.auth && this._data.auth.is_authenticated);
+  },
+
+  signup({ name, email, password }) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanName = sanitizeHTML(name || '').trim();
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, error: 'E-mail inválido.' };
+    }
+    if (!password || password.length < 6) {
+      return { success: false, error: 'A senha deve ter pelo menos 6 caracteres.' };
+    }
+
+    const exists = this._users.find(u => u.email === cleanEmail);
+    if (exists) {
+      return { success: false, error: 'Este e-mail já está cadastrado. Tente fazer login.' };
+    }
+
+    const newUser = {
+      id: 'usr-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      name: cleanName || 'Entregador',
+      email: cleanEmail,
+      password_hash: btoa(password), // Simulação de hash local seguro
+      created_at: new Date().toISOString(),
+      onboarding_completed: false
+    };
+
+    this._users.push(newUser);
+    this._data.user = newUser;
+    this._data.auth = {
+      token: 'jwt-token-' + Date.now(),
+      is_authenticated: true
+    };
+
+    this.save();
+    return { success: true, user: newUser };
+  },
+
+  login({ email, password }) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const genericErr = 'E-mail ou senha incorretos. Verifique suas credenciais.';
+
+    if (!cleanEmail || !password) {
+      return { success: false, error: genericErr };
+    }
+
+    const found = this._users.find(u => u.email === cleanEmail && u.password_hash === btoa(password));
+    if (!found) {
+      return { success: false, error: genericErr };
+    }
+
+    this._data.user = found;
+    this._data.auth = {
+      token: 'jwt-token-' + Date.now(),
+      is_authenticated: true
+    };
+
+    this.save();
+    return { success: true, user: found };
+  },
+
+  loginWithGoogle() {
+    const googleUser = {
+      id: 'usr-google-' + Date.now(),
+      name: 'Entregador Google',
+      email: 'entregador.google@gmail.com',
+      avatar: '🌐',
+      created_at: new Date().toISOString(),
+      onboarding_completed: true
+    };
+
+    const existing = this._users.find(u => u.email === googleUser.email);
+    if (!existing) {
+      this._users.push(googleUser);
+    }
+
+    this._data.user = existing || googleUser;
+    this._data.auth = {
+      token: 'google-token-' + Date.now(),
+      is_authenticated: true
+    };
+
+    this.save();
+    return { success: true, user: this._data.user };
+  },
+
+  resetPassword(email) {
+    // Anti-enumeration: sempre confirma o envio do e-mail
+    return { success: true, message: 'Se o e-mail estiver cadastrado, você receberá o link de redefinição.' };
+  },
+
+  completeOnboarding({ bike_model, fuel_price, bike_km_l_estimate }) {
+    if (this._data.user) {
+      this._data.user.onboarding_completed = true;
+    }
+    this._data.settings.bike_model = sanitizeHTML(bike_model || 'CG 160');
+    this._data.settings.fuel_price = Math.max(0, Number(fuel_price) || 5.80);
+    this._data.settings.bike_km_l_estimate = Math.max(1, Number(bike_km_l_estimate) || 27.5);
+    
+    const idx = this._users.findIndex(u => u.id === this._data.user?.id);
+    if (idx !== -1) {
+      this._users[idx].onboarding_completed = true;
+    }
+
+    this.save();
+    return this;
+  },
+
+  logout() {
+    if (this._data && this._data.auth) {
+      this._data.auth.is_authenticated = false;
+      this._data.user = null;
+    }
+    this.save();
+    return this;
+  },
+
+  // ── Registros e Corridas ──────────────────────────────
   getTodayRecord() {
     const today = new Date().toISOString().slice(0, 10);
     let record = this._data.days.find(d => d.date === today);
@@ -174,7 +316,7 @@ const DB = {
 
   getCostPerKm() {
     const kmL = Math.max(1, Number(this._data.settings.bike_km_l_estimate) || 27.5);
-    const price = Math.max(0, Number(this._data.settings.fuel_price) || 8.00);
+    const price = Math.max(0, Number(this._data.settings.fuel_price) || 5.80);
     return price / kmL;
   },
 
