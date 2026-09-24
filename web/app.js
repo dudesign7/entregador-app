@@ -1,4 +1,4 @@
-﻿/* =====================================================
+/* =====================================================
    APP.JS – Lógica principal, state, routing, UI
    ===================================================== */
 
@@ -43,7 +43,7 @@ function navigate(page) {
   // FAB visibility
   const fab = document.getElementById('fab');
   if (fab) {
-    fab.style.display = ['home', 'fuel'].includes(page) ? 'flex' : 'none';
+    fab.style.display = ['home', 'week', 'fuel'].includes(page) ? 'flex' : 'none';
   }
 }
 
@@ -62,7 +62,7 @@ function setupFAB() {
   const fab = document.getElementById('fab');
   if (!fab) return;
   fab.addEventListener('click', () => {
-    if (STATE.page === 'home') openTripModal(null);
+    if (STATE.page === 'home' || STATE.page === 'week') openTripModal(null);
     else if (STATE.page === 'fuel') openFuelModal(null);
   });
 }
