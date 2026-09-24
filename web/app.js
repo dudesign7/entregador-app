@@ -14,10 +14,15 @@ const STATE = {
 document.addEventListener('DOMContentLoaded', () => {
   DB.load();
   setupNavigation();
-  navigate('home');
   initStatus();
   setupFAB();
   updateAuthUI();
+
+  if (DB.isAuthenticated()) {
+    navigate('home');
+  } else {
+    navigate('auth');
+  }
 });
 
 // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -41,7 +46,12 @@ function navigate(page) {
   });
   // Render
   renderPage(page);
-  // FAB visibility
+
+  // Bottom Nav & FAB visibility
+  const bottomNav = document.querySelector('.bottom-nav');
+  if (bottomNav) {
+    bottomNav.style.display = page === 'auth' ? 'none' : 'flex';
+  }
   const fab = document.getElementById('fab');
   if (fab) {
     fab.style.display = ['home', 'week', 'fuel'].includes(page) ? 'flex' : 'none';
@@ -1215,6 +1225,146 @@ function handleLogout() {
   DB.logout();
   closeModal('modal-account');
   updateAuthUI();
-  renderPage(STATE.page);
   toast('👋 Você saiu da conta.');
+  navigate('auth');
+}
+
+// ============================================================
+// LANDING AUTH PAGE HANDLERS
+// ============================================================
+function switchLandingAuthTab(tab) {
+  const tabLogin = document.getElementById('auth-tab-login');
+  const tabSignup = document.getElementById('auth-tab-signup');
+  const formLogin = document.getElementById('landing-form-login');
+  const formSignup = document.getElementById('landing-form-signup');
+  const formForgot = document.getElementById('landing-form-forgot');
+
+  if (tab === 'login') {
+    if (tabLogin) { tabLogin.style.background = '#fff'; tabLogin.style.color = '#0f172a'; tabLogin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)'; }
+    if (tabSignup) { tabSignup.style.background = 'transparent'; tabSignup.style.color = '#64748b'; tabSignup.style.boxShadow = 'none'; }
+    if (formLogin) formLogin.style.display = 'block';
+    if (formSignup) formSignup.style.display = 'none';
+    if (formForgot) formForgot.style.display = 'none';
+  } else if (tab === 'signup') {
+    if (tabSignup) { tabSignup.style.background = '#fff'; tabSignup.style.color = '#0f172a'; tabSignup.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)'; }
+    if (tabLogin) { tabLogin.style.background = 'transparent'; tabLogin.style.color = '#64748b'; tabLogin.style.boxShadow = 'none'; }
+    if (formSignup) formSignup.style.display = 'block';
+    if (formLogin) formLogin.style.display = 'none';
+    if (formForgot) formForgot.style.display = 'none';
+  } else if (tab === 'forgot') {
+    if (tabLogin) { tabLogin.style.background = 'transparent'; tabLogin.style.color = '#64748b'; tabLogin.style.boxShadow = 'none'; }
+    if (tabSignup) { tabSignup.style.background = 'transparent'; tabSignup.style.color = '#64748b'; tabSignup.style.boxShadow = 'none'; }
+    if (formForgot) formForgot.style.display = 'block';
+    if (formLogin) formLogin.style.display = 'none';
+    if (formSignup) formSignup.style.display = 'none';
+  }
+}
+
+function checkLandingPasswordStrength(val) {
+  const bar = document.getElementById('landing-pw-bar');
+  const text = document.getElementById('landing-pw-text');
+  if (!bar || !text) return;
+
+  if (!val) {
+    bar.style.width = '0%';
+    bar.style.background = '#e2e8f0';
+    text.textContent = '';
+    return;
+  }
+
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  if (score <= 2) {
+    bar.style.width = '33%';
+    bar.style.background = '#ef4444';
+    text.textContent = 'Senha Fraca';
+    text.style.color = '#ef4444';
+  } else if (score <= 4) {
+    bar.style.width = '66%';
+    bar.style.background = '#f59e0b';
+    text.textContent = 'Senha Média';
+    text.style.color = '#f59e0b';
+  } else {
+    bar.style.width = '100%';
+    bar.style.background = '#10b981';
+    text.textContent = 'Senha Forte';
+    text.style.color = '#10b981';
+  }
+}
+
+function submitLandingLogin() {
+  const btn = document.getElementById('btn-landing-login');
+  const email = document.getElementById('landing-login-email')?.value;
+  const password = document.getElementById('landing-login-password')?.value;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
+
+  setTimeout(() => {
+    const res = DB.login({ email, password });
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar na Conta'; }
+
+    if (res.success) {
+      toast('✅ Login realizado com sucesso!');
+      updateAuthUI();
+      navigate('home');
+    } else {
+      toast('⚠️ ' + (res.error || 'Erro ao entrar'));
+    }
+  }, 400);
+}
+
+function submitLandingSignup() {
+  const btn = document.getElementById('btn-landing-signup');
+  const name = document.getElementById('landing-signup-name')?.value;
+  const email = document.getElementById('landing-signup-email')?.value;
+  const password = document.getElementById('landing-signup-password')?.value;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Criando conta...'; }
+
+  setTimeout(() => {
+    const res = DB.signup({ name, email, password });
+    if (btn) { btn.disabled = false; btn.textContent = 'Criar Conta Grátis'; }
+
+    if (res.success) {
+      toast('🎉 Conta criada com sucesso!');
+      updateAuthUI();
+      navigate('home');
+      openOnboardingModal();
+    } else {
+      toast('⚠️ ' + (res.error || 'Erro ao criar conta'));
+    }
+  }, 400);
+}
+
+function submitLandingForgot() {
+  const btn = document.getElementById('btn-landing-forgot');
+  const email = document.getElementById('landing-forgot-email')?.value;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  setTimeout(() => {
+    const res = DB.resetPassword(email);
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Link de Recuperação'; }
+    toast('📩 ' + res.message);
+    switchLandingAuthTab('login');
+  }, 400);
+}
+
+function submitLandingGoogle() {
+  const res = DB.loginWithGoogle();
+  if (res.success) {
+    toast('🌐 Autenticado via Google!');
+    updateAuthUI();
+    navigate('home');
+  }
+}
+
+function continueAsGuest() {
+  toast('👋 Bem-vindo ao Modo Visitante!');
+  navigate('home');
 }
