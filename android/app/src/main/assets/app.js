@@ -516,7 +516,7 @@ function openFuelModal() {
     <div class="modal-overlay active" id="modal-fuel" onclick="closeModal('modal-fuel', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">â›½ Registrar Abastecimento</div>
+        <div class="modal-title">⛽ Registrar Abastecimento</div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Data</label>
@@ -528,7 +528,7 @@ function openFuelModal() {
               <input type="number" id="ff-liters" class="form-input" placeholder="0.000" step="0.001" min="0" oninput="calcFuelTotal()">
             </div>
             <div class="form-group">
-              <label class="form-label">PreÃ§o/L (R$)</label>
+              <label class="form-label">Preço/L (R$)</label>
               <input type="number" id="ff-price" class="form-input" placeholder="${s.fuel_price}" step="0.01" min="0" value="${s.fuel_price}" oninput="calcFuelTotal()">
             </div>
           </div>
@@ -541,7 +541,7 @@ function openFuelModal() {
             <input type="number" id="ff-km" class="form-input" placeholder="0" step="0.1" min="0">
           </div>
           <div class="alert alert-blue" style="margin-top:4px">
-            â„¹ï¸ Informe os km rodados desde o último abastecimento para calcular km/L.
+            ℹ️ Informe os km rodados desde o último abastecimento para calcular km/L.
           </div>
         </div>
         <div class="modal-footer">
@@ -568,37 +568,59 @@ function calcFuelTotal() {
 function saveFuel() {
   const btn = document.querySelector('#modal-fuel .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
-  try {
-    const date   = document.getElementById('ff-date')?.value;
-    const liters = parseFloat(document.getElementById('ff-liters')?.value) || 0;
-    const price  = parseFloat(document.getElementById('ff-price')?.value) || 0;
-    const total  = parseFloat(document.getElementById('ff-total')?.value) || (liters * price);
-    const km     = parseFloat(document.getElementById('ff-km')?.value) || 0;
 
-    if (!date || liters <= 0) {
+  try {
+    const rawDate   = document.getElementById('ff-date')?.value;
+    const rawLiters = document.getElementById('ff-liters')?.value;
+    const rawPrice  = document.getElementById('ff-price')?.value;
+    const rawTotal  = document.getElementById('ff-total')?.value;
+    const rawKm     = document.getElementById('ff-km')?.value;
+
+    const date   = (rawDate && rawDate.trim()) ? rawDate.trim() : new Date().toISOString().slice(0, 10);
+    const liters = parseFloat(rawLiters);
+    const price  = parseFloat(rawPrice) || 0;
+    let total    = parseFloat(rawTotal);
+    if (isNaN(total) || total <= 0) {
+      total = liters * price;
+    }
+    const km = parseFloat(rawKm) || 0;
+
+    if (isNaN(liters) || liters <= 0) {
       if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
-      toast('⚠️ Informe data e quantidade de litros');
+      toast('⚠️ Informe uma quantidade válida de litros (> 0)');
       return;
     }
 
-    DB.addFuelLog({
+    const logPayload = {
       date,
-      liters,
-      price_per_liter: price,
-      total_paid: total,
-      km_since_refuel: km,
-      odometer_at_refuel: DB.getMaintenance().odometer_total
-    });
+      liters: Number(liters.toFixed(3)),
+      price_per_liter: Number(price.toFixed(2)),
+      total_paid: Number(total.toFixed(2)),
+      km_since_refuel: Number(km.toFixed(1)),
+      odometer_at_refuel: Number(DB.getMaintenance().odometer_total || 0)
+    };
 
-    if (price > 0) DB.updateSettings({ fuel_price: price });
+    const res = DB.addFuelLog(logPayload);
+
+    if (!res) {
+      throw new Error('Retorno nulo da camada de banco de dados ao inserir abastecimento.');
+    }
+
+    if (price > 0) {
+      DB.updateSettings({ fuel_price: price });
+    }
 
     closeModal('modal-fuel');
     renderFuel();
-    toast('✅ Abastecimento registrado com sucesso!');
+    renderPage(STATE.page);
+    toast(`✅ Abastecimento de ${liters.toFixed(2)}L (R$ ${total.toFixed(2)}) registrado com sucesso!`);
   } catch (err) {
     if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
-    console.error('Erro ao salvar abastecimento:', err);
-    toast('⚠️ Erro ao salvar abastecimento.');
+    console.error('Falha crítica ao salvar abastecimento:', err, {
+      message: err?.message,
+      stack: err?.stack
+    });
+    toast('⚠️ Falha ao salvar abastecimento: ' + (err?.message || 'Erro de comunicação ou permissão.'));
   }
 }
 
