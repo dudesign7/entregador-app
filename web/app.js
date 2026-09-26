@@ -35,6 +35,10 @@ function setupNavigation() {
 }
 
 function navigate(page) {
+  // Route Guard: enforce authentication for private pages
+  if (page !== 'auth' && (!DB || !DB.isAuthenticated())) {
+    page = 'auth';
+  }
   STATE.page = page;
   // Update nav
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -444,6 +448,8 @@ function updateDayTotal() {
 }
 
 function saveDay() {
+  const btn = document.querySelector('#modal-day .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     const date  = document.getElementById('f-date')?.value;
     const km    = parseFloat(document.getElementById('f-km')?.value) || 0;
@@ -454,7 +460,11 @@ function saveDay() {
     const lala  = parseFloat(document.getElementById('f-lala')?.value) || 0;
     const notes = document.getElementById('f-notes')?.value || '';
 
-    if (!date) { toast('⚠️ Informe a data'); return; }
+    if (!date) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+      toast('⚠️ Informe a data');
+      return;
+    }
 
     const earnings = ifood + uber + nn + lala;
     const payload = {
@@ -478,6 +488,7 @@ function saveDay() {
     closeModal('modal-day');
     renderPage(STATE.page);
   } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     console.error('Erro ao salvar dia:', err);
     toast('⚠️ Erro ao salvar o registro do dia.');
   }
@@ -555,6 +566,8 @@ function calcFuelTotal() {
 }
 
 function saveFuel() {
+  const btn = document.querySelector('#modal-fuel .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     const date   = document.getElementById('ff-date')?.value;
     const liters = parseFloat(document.getElementById('ff-liters')?.value) || 0;
@@ -562,7 +575,11 @@ function saveFuel() {
     const total  = parseFloat(document.getElementById('ff-total')?.value) || (liters * price);
     const km     = parseFloat(document.getElementById('ff-km')?.value) || 0;
 
-    if (!date || liters <= 0) { toast('⚠️ Informe data e quantidade de litros'); return; }
+    if (!date || liters <= 0) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+      toast('⚠️ Informe data e quantidade de litros');
+      return;
+    }
 
     DB.addFuelLog({
       date,
@@ -579,6 +596,7 @@ function saveFuel() {
     renderFuel();
     toast('✅ Abastecimento registrado com sucesso!');
   } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     console.error('Erro ao salvar abastecimento:', err);
     toast('⚠️ Erro ao salvar abastecimento.');
   }
@@ -634,6 +652,8 @@ function openManutModal() {
 }
 
 function saveManut() {
+  const btn = document.querySelector('#modal-manut .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     DB.updateMaintenance({
       odometer_total:       parseFloat(document.getElementById('mm-odo')?.value) || 0,
@@ -647,6 +667,7 @@ function saveManut() {
     renderManut();
     toast('✅ Manutenção atualizada com sucesso!');
   } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     console.error('Erro ao salvar manutenção:', err);
     toast('⚠️ Erro ao salvar manutenção.');
   }
@@ -686,6 +707,8 @@ function openSettingsModal() {
 }
 
 function saveSettings() {
+  const btn = document.querySelector('#modal-settings .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     DB.updateSettings({
       fuel_price: parseFloat(document.getElementById('s-price')?.value) || 5.80,
@@ -696,6 +719,7 @@ function saveSettings() {
     renderPage(STATE.page);
     toast('✅ Configurações salvas com sucesso!');
   } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     console.error('Erro ao salvar configurações:', err);
     toast('⚠️ Erro ao salvar configurações.');
   }
@@ -796,10 +820,13 @@ function closeTripModal() {
 }
 
 function saveTrip() {
+  const btn = document.querySelector('#modal-trip .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   try {
     const id = document.getElementById('trip-id')?.value;
     const val = parseFloat(document.getElementById('trip-value')?.value);
     if (isNaN(val) || val <= 0) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Salvar Corrida'; }
       toast('⚠️ Informe um valor válido para a corrida');
       return;
     }
@@ -821,6 +848,7 @@ function saveTrip() {
     closeTripModal();
     renderHome();
   } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar Corrida'; }
     console.error('Erro ao salvar corrida:', err);
     toast('⚠️ Erro ao salvar corrida.');
   }
@@ -939,7 +967,6 @@ const BrowserGPS = {
       err => console.warn('GPS error:', err),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
-    console.log('GPS tracking started');
   },
 
   pause() {
