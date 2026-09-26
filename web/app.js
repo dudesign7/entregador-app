@@ -444,46 +444,56 @@ function updateDayTotal() {
 }
 
 function saveDay() {
-  const date  = document.getElementById('f-date')?.value;
-  const km    = parseFloat(document.getElementById('f-km')?.value) || 0;
-  const tips  = parseFloat(document.getElementById('f-tips')?.value) || 0;
-  const ifood = parseFloat(document.getElementById('f-ifood')?.value) || 0;
-  const uber  = parseFloat(document.getElementById('f-uber')?.value) || 0;
-  const nn    = parseFloat(document.getElementById('f-99')?.value) || 0;
-  const lala  = parseFloat(document.getElementById('f-lala')?.value) || 0;
-  const notes = document.getElementById('f-notes')?.value || '';
+  try {
+    const date  = document.getElementById('f-date')?.value;
+    const km    = parseFloat(document.getElementById('f-km')?.value) || 0;
+    const tips  = parseFloat(document.getElementById('f-tips')?.value) || 0;
+    const ifood = parseFloat(document.getElementById('f-ifood')?.value) || 0;
+    const uber  = parseFloat(document.getElementById('f-uber')?.value) || 0;
+    const nn    = parseFloat(document.getElementById('f-99')?.value) || 0;
+    const lala  = parseFloat(document.getElementById('f-lala')?.value) || 0;
+    const notes = document.getElementById('f-notes')?.value || '';
 
-  if (!date) { toast('âš ï¸ Informe a data'); return; }
+    if (!date) { toast('⚠️ Informe a data'); return; }
 
-  const earnings = ifood + uber + nn + lala;
-  const payload = {
-    date,
-    km,
-    earnings,
-    apps: { ifood, uber, noventa_nove: nn, lalamove: lala },
-    tips,
-    notes
-  };
+    const earnings = ifood + uber + nn + lala;
+    const payload = {
+      date,
+      km,
+      earnings,
+      apps: { ifood, uber, noventa_nove: nn, lalamove: lala },
+      tips,
+      notes
+    };
 
-  const id = STATE.editingDayId;
-  if (id) {
-    DB.updateDay(id, payload);
-    toast('✅… Dia atualizado');
-  } else {
-    DB.addDay(payload);
-    toast('✅… Dia registrado');
+    const id = STATE.editingDayId;
+    if (id) {
+      DB.updateDay(id, payload);
+      toast('✅ Dia atualizado com sucesso!');
+    } else {
+      DB.addDay(payload);
+      toast('✅ Registro do dia salvo!');
+    }
+
+    closeModal('modal-day');
+    renderPage(STATE.page);
+  } catch (err) {
+    console.error('Erro ao salvar dia:', err);
+    toast('⚠️ Erro ao salvar o registro do dia.');
   }
-
-  closeModal('modal-day');
-  renderPage(STATE.page);
 }
 
 function deleteDay(id) {
-  if (!confirm('Excluir este dia?')) return;
-  DB.deleteDay(id);
-  closeModal('modal-day');
-  renderPage(STATE.page);
-  toast('Dia excluído');
+  try {
+    if (!confirm('Excluir este dia?')) return;
+    DB.deleteDay(id);
+    closeModal('modal-day');
+    renderPage(STATE.page);
+    toast('✅ Dia excluído com sucesso!');
+  } catch (err) {
+    console.error('Erro ao excluir dia:', err);
+    toast('⚠️ Erro ao excluir o dia.');
+  }
 }
 
 // â”€â”€ Modal: Fuel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -545,32 +555,36 @@ function calcFuelTotal() {
 }
 
 function saveFuel() {
-  const date   = document.getElementById('ff-date')?.value;
-  const liters = parseFloat(document.getElementById('ff-liters')?.value) || 0;
-  const price  = parseFloat(document.getElementById('ff-price')?.value) || 0;
-  const total  = parseFloat(document.getElementById('ff-total')?.value) || (liters * price);
-  const km     = parseFloat(document.getElementById('ff-km')?.value) || 0;
+  try {
+    const date   = document.getElementById('ff-date')?.value;
+    const liters = parseFloat(document.getElementById('ff-liters')?.value) || 0;
+    const price  = parseFloat(document.getElementById('ff-price')?.value) || 0;
+    const total  = parseFloat(document.getElementById('ff-total')?.value) || (liters * price);
+    const km     = parseFloat(document.getElementById('ff-km')?.value) || 0;
 
-  if (!date || liters <= 0) { toast('âš ï¸ Informe data e litros'); return; }
+    if (!date || liters <= 0) { toast('⚠️ Informe data e quantidade de litros'); return; }
 
-  DB.addFuelLog({
-    date,
-    liters,
-    price_per_liter: price,
-    total_paid: total,
-    km_since_refuel: km,
-    odometer_at_refuel: DB.getMaintenance().odometer_total
-  });
+    DB.addFuelLog({
+      date,
+      liters,
+      price_per_liter: price,
+      total_paid: total,
+      km_since_refuel: km,
+      odometer_at_refuel: DB.getMaintenance().odometer_total
+    });
 
-  // Update fuel price in settings
-  if (price > 0) DB.updateSettings({ fuel_price: price });
+    if (price > 0) DB.updateSettings({ fuel_price: price });
 
-  closeModal('modal-fuel');
-  renderFuel();
-  toast('✅… Abastecimento registrado');
+    closeModal('modal-fuel');
+    renderFuel();
+    toast('✅ Abastecimento registrado com sucesso!');
+  } catch (err) {
+    console.error('Erro ao salvar abastecimento:', err);
+    toast('⚠️ Erro ao salvar abastecimento.');
+  }
 }
 
-// â”€â”€ Modal: Maintenance edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Modal: Maintenance edit ───────────────────────────────
 function openManutModal() {
   const m = DB.getMaintenance();
   const s = DB.getSettings();
@@ -579,7 +593,7 @@ function openManutModal() {
     <div class="modal-overlay active" id="modal-manut" onclick="closeModal('modal-manut', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">ðŸ”§ Editar Manutenção</div>
+        <div class="modal-title">🔧 Editar Manutenção</div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Modelo da moto</label>
@@ -620,30 +634,35 @@ function openManutModal() {
 }
 
 function saveManut() {
-  DB.updateMaintenance({
-    odometer_total:      parseFloat(document.getElementById('mm-odo')?.value) || 0,
-    last_oil_km:         parseFloat(document.getElementById('mm-oil')?.value) || 0,
-    oil_interval_km:     parseFloat(document.getElementById('mm-oil-int')?.value) || 3000,
-    last_revision_km:    parseFloat(document.getElementById('mm-rev')?.value) || 0,
-    revision_interval_km: parseFloat(document.getElementById('mm-rev-int')?.value) || 6000
-  });
-  DB.updateSettings({ bike_model: document.getElementById('mm-model')?.value || 'CG 105cc' });
-  closeModal('modal-manut');
-  renderManut();
-  toast('✅… Manutenção atualizada');
+  try {
+    DB.updateMaintenance({
+      odometer_total:       parseFloat(document.getElementById('mm-odo')?.value) || 0,
+      last_oil_km:         parseFloat(document.getElementById('mm-oil')?.value) || 0,
+      oil_interval_km:     parseFloat(document.getElementById('mm-oil-int')?.value) || 3000,
+      last_revision_km:    parseFloat(document.getElementById('mm-rev')?.value) || 0,
+      revision_interval_km: parseFloat(document.getElementById('mm-rev-int')?.value) || 6000
+    });
+    DB.updateSettings({ bike_model: document.getElementById('mm-model')?.value || 'CG 160' });
+    closeModal('modal-manut');
+    renderManut();
+    toast('✅ Manutenção atualizada com sucesso!');
+  } catch (err) {
+    console.error('Erro ao salvar manutenção:', err);
+    toast('⚠️ Erro ao salvar manutenção.');
+  }
 }
 
-// â”€â”€ Modal: Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Modal: Settings ───────────────────────────────────────
 function openSettingsModal() {
   const s = DB.getSettings();
   const html = `
     <div class="modal-overlay active" id="modal-settings" onclick="closeModal('modal-settings', event)">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">âš™ï¸ Configurações</div>
+        <div class="modal-title">⚙️ Configurações</div>
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">PreÃ§o da gasolina (R$/L)</label>
+            <label class="form-label">Preço da gasolina (R$/L)</label>
             <input type="number" id="s-price" class="form-input" value="${s.fuel_price}" step="0.01">
           </div>
           <div class="form-group">
@@ -655,7 +674,7 @@ function openSettingsModal() {
             <input type="text" id="s-bike" class="form-input" value="${s.bike_model}">
           </div>
           <div class="divider"></div>
-          <button class="btn btn-danger btn-full" onclick="resetData()">ðŸ—‘ï¸ Resetar todos os dados</button>
+          <button class="btn btn-danger btn-full" onclick="resetData()">🗑️ Resetar todos os dados</button>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary flex-1" onclick="closeModal('modal-settings')">Cancelar</button>
@@ -667,22 +686,32 @@ function openSettingsModal() {
 }
 
 function saveSettings() {
-  DB.updateSettings({
-    fuel_price: parseFloat(document.getElementById('s-price')?.value) || 8,
-    bike_km_l_estimate: parseFloat(document.getElementById('s-kml')?.value) || 27.5,
-    bike_model: document.getElementById('s-bike')?.value || 'CG 105cc'
-  });
-  closeModal('modal-settings');
-  renderPage(STATE.page);
-  toast('✅… Configurações salvas');
+  try {
+    DB.updateSettings({
+      fuel_price: parseFloat(document.getElementById('s-price')?.value) || 5.80,
+      bike_km_l_estimate: parseFloat(document.getElementById('s-kml')?.value) || 27.5,
+      bike_model: document.getElementById('s-bike')?.value || 'CG 160'
+    });
+    closeModal('modal-settings');
+    renderPage(STATE.page);
+    toast('✅ Configurações salvas com sucesso!');
+  } catch (err) {
+    console.error('Erro ao salvar configurações:', err);
+    toast('⚠️ Erro ao salvar configurações.');
+  }
 }
 
 function resetData() {
-  if (!confirm('Resetar TODOS os dados? Esta ação não pode ser desfeita.')) return;
-  DB.reset();
-  closeModal('modal-settings');
-  renderPage(STATE.page);
-  toast('Dados resetados para exemplo');
+  try {
+    if (!confirm('Resetar TODOS os dados? Esta ação não pode ser desfeita.')) return;
+    DB.resetData();
+    closeModal('modal-settings');
+    renderPage(STATE.page);
+    toast('✅ Todos os dados foram resetados!');
+  } catch (err) {
+    console.error('Erro ao resetar dados:', err);
+    toast('⚠️ Erro ao resetar dados.');
+  }
 }
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -767,32 +796,49 @@ function closeTripModal() {
 }
 
 function saveTrip() {
-    const id = document.getElementById('trip-id').value;
+  try {
+    const id = document.getElementById('trip-id')?.value;
+    const val = parseFloat(document.getElementById('trip-value')?.value);
+    if (isNaN(val) || val <= 0) {
+      toast('⚠️ Informe um valor válido para a corrida');
+      return;
+    }
+
     const data = {
-        platform: document.getElementById('trip-platform').value,
-        value: document.getElementById('trip-value').value,
-        km: document.getElementById('trip-km').value,
-        time_minutes: document.getElementById('trip-time').value
+      platform: document.getElementById('trip-platform')?.value || 'ifood',
+      value: val,
+      km: parseFloat(document.getElementById('trip-km')?.value) || 0,
+      time_minutes: parseInt(document.getElementById('trip-time')?.value) || 0
     };
+
     if (id) {
-        DB.updateTrip(id, data);
-        toast('Corrida atualizada!');
+      DB.updateTrip(id, data);
+      toast('✅ Corrida atualizada com sucesso!');
     } else {
-        DB.addTrip(data);
-        toast('Nova corrida salva!');
+      DB.addTrip(data);
+      toast('✅ Nova corrida salva!');
     }
     closeTripModal();
     renderHome();
+  } catch (err) {
+    console.error('Erro ao salvar corrida:', err);
+    toast('⚠️ Erro ao salvar corrida.');
+  }
 }
 
 function deleteTrip() {
-    const id = document.getElementById('trip-id').value;
+  try {
+    const id = document.getElementById('trip-id')?.value;
     if (confirm('Excluir esta corrida?')) {
-        DB.deleteTrip(id);
-        toast('Corrida excluída!');
-        closeTripModal();
-        renderHome();
+      DB.deleteTrip(id);
+      toast('✅ Corrida excluída!');
+      closeTripModal();
+      renderHome();
     }
+  } catch (err) {
+    console.error('Erro ao excluir corrida:', err);
+    toast('⚠️ Erro ao excluir corrida.');
+  }
 }
 
 function renderTodayTrips() {
@@ -1162,6 +1208,11 @@ function handleLoginSubmit(e) {
 
 function handleSignupSubmit(e) {
   e.preventDefault();
+  const terms = document.getElementById('signup-terms');
+  if (terms && !terms.checked) {
+    toast('⚠️ É necessário aceitar os Termos de Uso e Política de Privacidade.');
+    return;
+  }
   const btn = document.getElementById('btn-signup-submit');
   const name = document.getElementById('signup-name')?.value;
   const email = document.getElementById('signup-email')?.value;
@@ -1201,13 +1252,8 @@ function handleForgotSubmit(e) {
 }
 
 function handleGoogleLogin() {
-  const res = DB.loginWithGoogle();
-  if (res.success) {
-    toast('🌐 Autenticado via Google!');
-    closeModal('modal-auth');
-    updateAuthUI();
-    renderPage(STATE.page);
-  }
+  toast('ℹ️ O login via Google foi descontinuado. Por favor, utilize seu e-mail e senha para entrar.');
+  switchAuthTab('login');
 }
 
 function saveOnboardingSubmit() {
@@ -1227,6 +1273,16 @@ function handleLogout() {
   updateAuthUI();
   toast('👋 Você saiu da conta.');
   navigate('auth');
+}
+
+function deleteAccountSubmit() {
+  if (confirm('⚠️ ATENÇÃO: Deseja realmente excluir permanentemente sua conta e TODOS os seus dados armazenados (LGPD)? Esta ação é irreversível.')) {
+    DB.deleteUserAccount();
+    closeModal('modal-account');
+    updateAuthUI();
+    toast('🗑️ Sua conta e todos os dados foram excluídos permanentemente.');
+    navigate('auth');
+  }
 }
 
 // ============================================================
@@ -1319,6 +1375,11 @@ function submitLandingLogin() {
 }
 
 function submitLandingSignup() {
+  const terms = document.getElementById('landing-signup-terms');
+  if (terms && !terms.checked) {
+    toast('⚠️ É necessário aceitar os Termos de Uso e Política de Privacidade.');
+    return;
+  }
   const btn = document.getElementById('btn-landing-signup');
   const name = document.getElementById('landing-signup-name')?.value;
   const email = document.getElementById('landing-signup-email')?.value;
@@ -1356,12 +1417,8 @@ function submitLandingForgot() {
 }
 
 function submitLandingGoogle() {
-  const res = DB.loginWithGoogle();
-  if (res.success) {
-    toast('🌐 Autenticado via Google!');
-    updateAuthUI();
-    navigate('home');
-  }
+  toast('ℹ️ O login via Google foi descontinuado. Por favor, utilize seu e-mail e senha para entrar.');
+  switchLandingAuthTab('login');
 }
 
 function continueAsGuest() {

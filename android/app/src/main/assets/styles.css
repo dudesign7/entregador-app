@@ -960,9 +960,21 @@ select.form-input {
 
 .hero-grid {
   display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 10px !important;
   margin-bottom: 12px !important;
+  width: 100% !important;
+}
+
+.hero-card {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.hero-card-value {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .card {

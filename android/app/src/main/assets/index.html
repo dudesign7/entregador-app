@@ -114,6 +114,12 @@
               <div id="landing-pw-bar" style="height:4px; border-radius:2px; background:#e2e8f0; margin-top:6px; transition:all 0.3s;"></div>
               <span id="landing-pw-text" class="text-xs text-muted" style="font-size:0.75rem;"></span>
             </div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label style="font-size:0.8rem; display:flex; align-items:flex-start; gap:8px; cursor:pointer; color:#475569;">
+                <input type="checkbox" id="landing-signup-terms" style="margin-top:2px;" required />
+                <span>Li e aceito os <a href="#" onclick="alert('Política de Privacidade e Termos de Uso (LGPD):\nSeus dados são armazenados exclusivamente para cálculo de controle financeiro. Você pode exportar ou excluir permanentemente seus dados a qualquer momento.'); return false;" style="color:#ff6b00; font-weight:600;">Termos de Uso e Política de Privacidade</a></span>
+              </label>
+            </div>
             <button type="button" id="btn-landing-signup" onclick="submitLandingSignup()" class="btn btn-primary" style="width:100%; background:#10b981; color:#fff; font-weight:700; padding:14px; font-size:1rem; border-radius:10px;">
               Criar Conta Grátis
             </button>
@@ -133,18 +139,6 @@
               <a href="#" onclick="switchLandingAuthTab('login'); return false;" style="font-size:0.85rem; color:#64748b; text-decoration:none;">Voltar para Login</a>
             </div>
           </div>
-
-          <!-- DIVIDER -->
-          <div style="display:flex; align-items:center; margin:20px 0 16px 0; gap:8px;">
-            <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-            <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">OU</span>
-            <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-          </div>
-
-          <!-- GOOGLE AUTH -->
-          <button type="button" onclick="submitLandingGoogle()" class="btn btn-secondary" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:12px; font-weight:600; border-radius:10px;">
-            <span>🌐</span> Entrar com Google
-          </button>
 
         </div>
 
@@ -574,6 +568,12 @@
             <div id="pw-strength-bar" style="height:4px; border-radius:2px; background:#e2e8f0; margin-top:6px; transition:all 0.3s;"></div>
             <span id="pw-strength-text" class="text-xs text-muted" style="font-size:0.75rem;"></span>
           </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-size:0.8rem; display:flex; align-items:flex-start; gap:8px; cursor:pointer; color:#475569;">
+              <input type="checkbox" id="signup-terms" style="margin-top:2px;" required />
+              <span>Li e aceito os <a href="#" onclick="alert('Política de Privacidade e Termos de Uso (LGPD):\nSeus dados são armazenados exclusivamente para cálculo de controle financeiro. Você pode exportar ou excluir permanentemente seus dados a qualquer momento.'); return false;" style="color:#ff6b00; font-weight:600;">Termos de Uso e Política de Privacidade</a></span>
+            </label>
+          </div>
           <button type="submit" id="btn-signup-submit" class="btn btn-primary" style="width:100%; background:#10b981; color:#fff; font-weight:700; padding:12px;">
             <span class="btn-text">Criar Conta Grátis</span>
           </button>
@@ -593,17 +593,6 @@
             <a href="#" onclick="switchAuthTab('login'); return false;" style="font-size:0.8rem; color:var(--text-muted);">Voltar para Login</a>
           </div>
         </form>
-
-        <!-- SOCIAL DIVIDER -->
-        <div style="display:flex; align-items:center; margin:16px 0; gap:8px;">
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-          <span style="font-size:0.75rem; color:#64748b;">ou acesse com</span>
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-        </div>
-
-        <button class="btn btn-secondary" onclick="handleGoogleLogin()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px;">
-          <span>🌐</span> <strong>Entrar com Google</strong>
-        </button>
       </div>
     </div>
   </div>
@@ -635,7 +624,8 @@
 
         <div style="margin-top:16px;">
           <button class="btn btn-secondary" onclick="closeModal('modal-account'); openSettingsModal();" style="width:100%; margin-bottom:8px;">⚙️ Configurações da Moto e Metas</button>
-          <button class="btn" style="width:100%; background:transparent; color:#ef4444; border:1px solid #ef4444;" onclick="handleLogout()">🚪 Sair da Conta</button>
+          <button class="btn" style="width:100%; background:transparent; color:#ef4444; border:1px solid #ef4444; margin-bottom:8px;" onclick="handleLogout()">🚪 Sair da Conta</button>
+          <button class="btn" style="width:100%; background:#fef2f2; color:#dc2626; border:1px dashed #fca5a5; font-size:0.85rem;" onclick="deleteAccountSubmit()">🗑️ Excluir Minha Conta (LGPD)</button>
         </div>
       </div>
     </div>
