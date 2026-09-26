@@ -695,7 +695,7 @@ function openSettingsModal() {
             <input type="text" id="s-bike" class="form-input" value="${s.bike_model}">
           </div>
           <div class="divider"></div>
-          <button class="btn btn-danger btn-full" onclick="resetData()">🗑️ Resetar todos os dados</button>
+          <button class="btn btn-danger btn-full" onclick="closeModal('modal-settings'); resetDataPrompt();">🗑️ Resetar todos os dados da conta</button>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary flex-1" onclick="closeModal('modal-settings')">Cancelar</button>
@@ -1081,13 +1081,26 @@ function updateAuthUI() {
   const user = DB.getUser();
   const isAuth = DB.isAuthenticated();
   const labelEl = document.getElementById('header-auth-label');
+  const arrowEl = document.getElementById('header-auth-arrow');
 
   if (labelEl) {
     if (isAuth && user) {
       labelEl.textContent = user.name ? user.name.split(' ')[0] : 'Conta';
+      if (arrowEl) arrowEl.style.display = 'inline';
     } else {
       labelEl.textContent = 'Entrar';
+      if (arrowEl) arrowEl.style.display = 'none';
     }
+  }
+
+  // Populate Dropdown Header Data if authenticated
+  if (isAuth && user) {
+    const ddName = document.getElementById('dd-name');
+    const ddEmail = document.getElementById('dd-email');
+    const ddAvatar = document.getElementById('dd-avatar');
+    if (ddName) ddName.textContent = user.name || 'Entregador';
+    if (ddEmail) ddEmail.textContent = user.email || '';
+    if (ddAvatar) ddAvatar.textContent = user.avatar || '🛵';
   }
 
   if (isAuth && user && !user.onboarding_completed) {
@@ -1095,11 +1108,77 @@ function updateAuthUI() {
   }
 }
 
+function toggleUserDropdown(e) {
+  if (e) e.stopPropagation();
+  if (!DB.isAuthenticated()) {
+    openAuthModal();
+    return;
+  }
+
+  const dd = document.getElementById('user-dropdown-menu');
+  if (dd) {
+    const isHidden = dd.classList.contains('hidden');
+    if (isHidden) {
+      updateAuthUI();
+      dd.classList.remove('hidden');
+    } else {
+      dd.classList.add('hidden');
+    }
+  }
+}
+
+function closeUserDropdown() {
+  const dd = document.getElementById('user-dropdown-menu');
+  if (dd) dd.classList.add('hidden');
+}
+
+// Global click listener to close user dropdown when clicking outside
+window.addEventListener('click', (e) => {
+  const btn = document.getElementById('btn-header-auth');
+  const dd = document.getElementById('user-dropdown-menu');
+  if (dd && !dd.classList.contains('hidden')) {
+    if (btn && btn.contains(e.target)) return;
+    if (dd.contains(e.target)) return;
+    dd.classList.add('hidden');
+  }
+});
+
 function handleAuthHeaderClick() {
   if (DB.isAuthenticated()) {
-    openAccountModal();
+    toggleUserDropdown();
   } else {
     openAuthModal();
+  }
+}
+
+function resetDataPrompt() {
+  if (confirm('🔄 ATENÇÃO: Tem certeza de que deseja resetar TODOS os seus dados armazenados (corridas, diários e abastecimentos)?\n\nEsta ação não poderá ser desfeita.')) {
+    try {
+      DB.resetData();
+      updateAuthUI();
+      renderPage(STATE.page);
+      toast('✅ Todos os seus dados foram resetados com sucesso!');
+    } catch (err) {
+      console.error('Erro ao resetar dados:', err);
+      toast('⚠️ Não foi possível resetar os dados.');
+    }
+  }
+}
+
+function deleteAccountPrompt() {
+  if (confirm('⚠️ ALERTA CRÍTICO DE EXCLUSÃO (LGPD):\n\nVocê está prestes a excluir permanentemente sua conta e TODOS os seus registros do servidor.\n\nDeseja realmente prosseguir com esta ação irreversível?')) {
+    if (confirm('🚨 ÚLTIMA CONFIRMAÇÃO:\n\nSua conta e todo o histórico financeiro serão DELETADOS PERMANENTEMENTE.\n\nClique em OK para confirmar a exclusão da sua conta.')) {
+      try {
+        DB.deleteUserAccount();
+        closeModal('modal-account');
+        updateAuthUI();
+        toast('🗑️ Sua conta e todos os dados foram excluídos com sucesso.');
+        navigate('auth');
+      } catch (err) {
+        console.error('Erro ao excluir conta:', err);
+        toast('⚠️ Erro ao excluir sua conta.');
+      }
+    }
   }
 }
 

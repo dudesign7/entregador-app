@@ -43,9 +43,9 @@
         <span class="logo-icon">🛵</span>
         <h1 style="font-size:1.1rem">Entregador</h1>
       </div>
-      <div class="header-actions" style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-secondary btn-sm" id="btn-header-auth" onclick="handleAuthHeaderClick()" style="font-size:0.8rem; padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:6px;">
-          <span>👤</span> <span id="header-auth-label">Entrar</span>
+      <div class="header-actions" style="display:flex; align-items:center; gap:8px; position:relative;">
+        <button class="btn btn-secondary btn-sm" id="btn-header-auth" onclick="toggleUserDropdown(event)" style="font-size:0.8rem; padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:6px;">
+          <span>👤</span> <span id="header-auth-label">Entrar</span> <span id="header-auth-arrow" style="font-size:0.65rem; display:none;">▼</span>
         </button>
         <button class="btn btn-icon" onclick="openSettingsModal()" title="Configurações">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
@@ -53,6 +53,35 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
           </svg>
         </button>
+
+        <!-- USER DROPDOWN MENU -->
+        <div id="user-dropdown-menu" class="user-dropdown hidden">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-avatar" id="dd-avatar">🛵</div>
+            <div class="user-dropdown-info">
+              <strong id="dd-name">Usuário</strong>
+              <span id="dd-email" class="text-xs text-muted">usuario@exemplo.com</span>
+            </div>
+          </div>
+          <div class="user-dropdown-divider"></div>
+          <button type="button" class="user-dropdown-item" onclick="closeUserDropdown(); openAccountModal();">
+            <span>👤</span> Minha Conta
+          </button>
+          <button type="button" class="user-dropdown-item" onclick="closeUserDropdown(); openSettingsModal();">
+            <span>⚙️</span> Configurações & Metas
+          </button>
+          <div class="user-dropdown-divider"></div>
+          <button type="button" class="user-dropdown-item text-yellow" onclick="closeUserDropdown(); resetDataPrompt();">
+            <span>🔄</span> Resetar Dados da Conta
+          </button>
+          <button type="button" class="user-dropdown-item text-red" onclick="closeUserDropdown(); deleteAccountPrompt();">
+            <span>🗑️</span> Excluir Minha Conta (LGPD)
+          </button>
+          <div class="user-dropdown-divider"></div>
+          <button type="button" class="user-dropdown-item text-muted" onclick="closeUserDropdown(); handleLogout();">
+            <span>🚪</span> Sair da Conta
+          </button>
+        </div>
       </div>
     </header>
 

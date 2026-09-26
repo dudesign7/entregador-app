@@ -232,10 +232,12 @@ const DB = {
   // ── Dias e Corridas (CRUD) ──────────────────────────────
   getTodayRecord() {
     const today = new Date().toISOString().slice(0, 10);
-    let record = this._data.days.find(d => d.date === today);
+    const uid = this._data?.user?.id || null;
+    let record = this._data.days.find(d => d.date === today && (uid ? (d.user_id === uid || !d.user_id) : true));
     if (!record) {
       record = {
         id: 'day-' + Date.now(),
+        user_id: uid,
         date: today,
         weekday: fmtWeekday(today),
         km: 0,
@@ -253,14 +255,16 @@ const DB = {
 
   addDay(dayPayload) {
     if (!dayPayload || !dayPayload.date) return null;
+    const uid = this._data?.user?.id || null;
     
-    let existing = this._data.days.find(d => d.date === dayPayload.date);
+    let existing = this._data.days.find(d => d.date === dayPayload.date && (uid ? (d.user_id === uid || !d.user_id) : true));
     if (existing) {
       return this.updateDay(existing.id, dayPayload);
     }
 
     const newDay = {
       id: 'day-' + Date.now(),
+      user_id: uid,
       date: dayPayload.date,
       weekday: fmtWeekday(dayPayload.date),
       km: Math.max(0, Number(dayPayload.km) || 0),
@@ -358,14 +362,19 @@ const DB = {
 
   // ── Abastecimento e Combustível (CRUD) ─────────────────
   getFuelLogs() {
-    return Array.isArray(this._data.fuel_logs) ? this._data.fuel_logs : [];
+    const logs = Array.isArray(this._data.fuel_logs) ? this._data.fuel_logs : [];
+    const uid = this._data?.user?.id || null;
+    const filtered = uid ? logs.filter(l => l.user_id === uid || !l.user_id) : logs;
+    return filtered.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   },
 
   addFuelLog(logData) {
     if (!this._data.fuel_logs) this._data.fuel_logs = [];
+    const uid = this._data?.user?.id || null;
 
     const newLog = {
       id: 'fuel-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      user_id: uid,
       date: logData.date || new Date().toISOString().slice(0, 10),
       liters: Math.max(0, Number(logData.liters) || 0),
       price_per_liter: Math.max(0, Number(logData.price_per_liter) || 0),
@@ -456,7 +465,10 @@ const DB = {
   },
 
   getDays() {
-    return Array.isArray(this._data.days) ? this._data.days : [];
+    const days = Array.isArray(this._data.days) ? this._data.days : [];
+    const uid = this._data?.user?.id || null;
+    const filtered = uid ? days.filter(d => d.user_id === uid || !d.user_id) : days;
+    return filtered.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   },
 
   getDayById(id) {
